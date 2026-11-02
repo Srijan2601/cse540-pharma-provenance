@@ -391,7 +391,7 @@ Use testnet-only wallets. Keep attendance and other team-internal notes in the t
 | Shaurya | Project Lead, QA & Docs | [shaurya-asu](https://github.com/shaurya-asu) |
 | Abedh Tiwari | Smart Contract Lead | *TBD* |
 | Srijan Girdhar | Front-End / dApp Lead | [Srijan2601](https://github.com/Srijan2601) |
-| Soham Kumar | Off-Chain & IoT Lead | *TBD* |
+| Soham Kumar | Off-Chain & IoT Lead | [snola534-alt](https://github.com/snola534-alt) |
 
 Roles are leads, not exclusive owners: everyone codes, writes and presents (Team Contract §2). Weekly sync: Sundays 7–8 PM AZ.
 
