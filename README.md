@@ -389,7 +389,7 @@ Use testnet-only wallets. Keep attendance and other team-internal notes in the t
 | Member | Role (Team Contract §1) | GitHub |
 |---|---|---|
 | Shaurya | Project Lead, QA & Docs | [shaurya-asu](https://github.com/shaurya-asu) |
-| Abedh Tiwari | Smart Contract Lead | *TBD* |
+| Abedh Tiwari | Smart Contract Lead | [abedhtiwari14](https://github.com/abedhtiwari14) |
 | Srijan Girdhar | Front-End / dApp Lead | [Srijan2601](https://github.com/Srijan2601) |
 | Soham Kumar | Off-Chain & IoT Lead | [snola534-alt](https://github.com/snola534-alt) |
 
