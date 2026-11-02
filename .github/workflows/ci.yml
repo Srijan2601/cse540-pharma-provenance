@@ -1,0 +1,27 @@
+# Keeps `main` green (Team Contract: "the main branch always passes tests").
+# Runs the contract compile + unit tests on every push to main and every PR.
+# Needs no secrets: tests use Hardhat's in-process network.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: Compile + test contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx hardhat compile
+      - run: npx hardhat test
+  # TODO: add frontend/ and oracle/ jobs once those packages have a package.json.

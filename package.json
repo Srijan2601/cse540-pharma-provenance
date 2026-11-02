@@ -1,0 +1,33 @@
+{
+  "name": "cse540-pharma-provenance",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tamper-evident pharmaceutical cold-chain provenance on Polygon Amoy (CSE 540 Project Group 2)",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "hardhat test --gas-stats",
+    "clean": "hardhat clean",
+    "node": "hardhat node",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:amoy": "hardhat run scripts/deploy.js --network amoy",
+    "roles:local": "hardhat run scripts/grant-roles.js --network localhost",
+    "roles:amoy": "hardhat run scripts/grant-roles.js --network amoy"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",
+    "chai": "^6.2.2",
+    "dotenv": "^18.0.9",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.21.2",
+    "mocha": "^12.0.0"
+  }
+}

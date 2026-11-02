@@ -147,3 +147,34 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# ---------------------------------------------------------------------------
+# CSE 540 Group 2 additions (the Node.js template above is unchanged)
+# ---------------------------------------------------------------------------
+# Hardhat build/test output
+/artifacts/
+/cache/
+/types/
+/typechain-types/
+/coverage.json
+/gasReporterOutput.json
+
+# Local-chain deployment records (deployments/amoy.json IS committed)
+/deployments/localhost.json
+/deployments/default.json
+
+# OS / editor
+.DS_Store
+.idea/
+
+# Key material: never commit
+*.pem
+*.key
+keystore*.json
+
+# Private course material. The proposal/team-contract PDF contains student IDs
+# and this repo is public. Keep it outside the repo.
+*Team_Contract*
+*[Tt]eam*[Cc]ontract*
+*[Pp]roposal*.pdf
+private/
