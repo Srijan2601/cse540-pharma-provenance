@@ -115,18 +115,35 @@ contract ProvenanceRegistry is AccessControl, IProvenanceRegistry {
         int16 maxTempTenthsC,
         DocumentRef calldata metadata
     ) external onlyRole(MANUFACTURER_ROLE) returns (uint256 batchId) {
-        // TODO(contract): implement
-        // 1. Validate: minTempTenthsC < maxTempTenthsC (else InvalidTemperatureRange);
-        //    metadata.cid not empty and metadata.contentHash != 0 (else EmptyDocument).
-        // 2. Reject duplicates: _batchIdByProductHash[productHash] must be 0
-        //    (else DuplicateProduct).
-        // 3. batchId = ++_batchCount; _batchIdByProductHash[productHash] = batchId.
-        // 4. Fill _batches[batchId]: id, productHash, manufacturer = custodian = msg.sender,
-        //    manufactureDate, registeredAt = uint64(block.timestamp), status = Created,
-        //    temperature range, metadata.
-        // 5. emit BatchRegistered(batchId, msg.sender, productHash, metadata.cid).
-        (productHash, manufactureDate, minTempTenthsC, maxTempTenthsC, metadata, batchId);
-        _notImplemented();
+        // Validate inputs
+        if (minTempTenthsC >= maxTempTenthsC) {
+            revert InvalidTemperatureRange(minTempTenthsC, maxTempTenthsC);
+        }
+        _requireDocument(metadata);
+
+        // One lot per product hash
+        uint256 existing = _batchIdByProductHash[productHash];
+        if (existing != 0) revert DuplicateProduct(productHash, existing);
+
+        // New ID, starting at 1
+        batchId = ++_batchCount;
+        _batchIdByProductHash[productHash] = batchId;
+
+        // Save the lot; the manufacturer is the first custodian
+        Batch storage batch = _batches[batchId];
+        batch.id = batchId;
+        batch.productHash = productHash;
+        batch.manufacturer = msg.sender;
+        batch.custodian = msg.sender;
+        batch.manufactureDate = manufactureDate;
+        batch.registeredAt = uint64(block.timestamp);
+        batch.status = Status.Created;
+        batch.minTempTenthsC = minTempTenthsC;
+        batch.maxTempTenthsC = maxTempTenthsC;
+        batch.metadata.cid = metadata.cid;
+        batch.metadata.contentHash = metadata.contentHash;
+
+        emit BatchRegistered(batchId, msg.sender, productHash, metadata.cid);
     }
 
     // =====================================================================
@@ -138,22 +155,29 @@ contract ProvenanceRegistry is AccessControl, IProvenanceRegistry {
         external
         onlyEitherRole(MANUFACTURER_ROLE, DISTRIBUTOR_ROLE)
     {
-        // TODO(contract): implement
-        // 1. Load the lot (BatchNotFound if missing); msg.sender must be the
-        //    custodian (NotCustodian).
-        // 2. No open hand-off: pendingCustodian must be address(0)
-        //    (TransferAlreadyPending). Check this first, because an open
-        //    hand-off always means InTransit and the status check below would
-        //    otherwise hide it. Then the status must be Created or Stored (InvalidStatus).
-        // 3. Check the recipient: not address(0) and not msg.sender, and holds an
-        //    allowed role. MANUFACTURER -> DISTRIBUTOR; DISTRIBUTOR -> DISTRIBUTOR
-        //    or RETAILER (InvalidRecipient). C3: team to confirm whether
-        //    MANUFACTURER -> RETAILER is allowed.
-        // 4. Save the current status in _statusBeforeTransfer, set pendingCustodian = to
-        //    and status = InTransit.
-        // 5. emit TransferInitiated(batchId, msg.sender, to).
-        (batchId, to);
-        _notImplemented();
+        Batch storage batch = _requireBatch(batchId);
+        if (batch.custodian != msg.sender) revert NotCustodian(batchId, msg.sender);
+
+        // Only one open hand-off per lot
+        if (batch.pendingCustodian != address(0)) {
+            revert TransferAlreadyPending(batchId, batch.pendingCustodian);
+        }
+        if (batch.status != Status.Created && batch.status != Status.Stored) {
+            revert InvalidStatus(batchId, batch.status);
+        }
+
+        // Allowed routes: anyone -> distributor, distributor -> pharmacy
+        if (to == address(0) || to == msg.sender) revert InvalidRecipient(to);
+        bool toDistributor = hasRole(DISTRIBUTOR_ROLE, to);
+        bool toPharmacy = hasRole(RETAILER_ROLE, to) && hasRole(DISTRIBUTOR_ROLE, msg.sender);
+        if (!toDistributor && !toPharmacy) revert InvalidRecipient(to);
+
+        // Open the hand-off
+        _statusBeforeTransfer[batchId] = batch.status;
+        batch.pendingCustodian = to;
+        batch.status = Status.InTransit;
+
+        emit TransferInitiated(batchId, msg.sender, to);
     }
 
     /// @inheritdoc IProvenanceRegistry
@@ -161,15 +185,20 @@ contract ProvenanceRegistry is AccessControl, IProvenanceRegistry {
         external
         onlyEitherRole(DISTRIBUTOR_ROLE, RETAILER_ROLE)
     {
-        // TODO(contract): implement
-        // 1. Load the lot; there must be an open hand-off (NoPendingTransfer) and the
-        //    status must be InTransit (InvalidStatus).
-        // 2. msg.sender must be pendingCustodian (NotPendingCustodian).
-        // 3. previous = custodian; custodian = msg.sender; pendingCustodian = address(0);
-        //    status = Stored.
-        // 4. emit CustodyTransferred(batchId, previous, msg.sender).
-        (batchId);
-        _notImplemented();
+        Batch storage batch = _requireBatch(batchId);
+
+        // There must be a hand-off waiting, addressed to the caller
+        if (batch.pendingCustodian == address(0)) revert NoPendingTransfer(batchId);
+        if (batch.status != Status.InTransit) revert InvalidStatus(batchId, batch.status);
+        if (batch.pendingCustodian != msg.sender) revert NotPendingCustodian(batchId, msg.sender);
+
+        // Custody moves to the caller
+        address previous = batch.custodian;
+        batch.custodian = msg.sender;
+        batch.pendingCustodian = address(0);
+        batch.status = Status.Stored;
+
+        emit CustodyTransferred(batchId, previous, msg.sender);
     }
 
     /// @inheritdoc IProvenanceRegistry
@@ -205,12 +234,14 @@ contract ProvenanceRegistry is AccessControl, IProvenanceRegistry {
 
     /// @inheritdoc IProvenanceRegistry
     function markDelivered(uint256 batchId) external onlyRole(RETAILER_ROLE) {
-        // TODO(contract): implement
-        // 1. Load the lot; msg.sender must be the custodian (NotCustodian).
-        // 2. Status must be Stored (InvalidStatus). Stored -> Delivered.
-        // 3. emit StatusUpdated(batchId, Status.Stored, Status.Delivered, msg.sender).
-        (batchId);
-        _notImplemented();
+        Batch storage batch = _requireBatch(batchId);
+        if (batch.custodian != msg.sender) revert NotCustodian(batchId, msg.sender);
+        if (batch.status != Status.Stored) revert InvalidStatus(batchId, batch.status);
+
+        // End of the happy path
+        batch.status = Status.Delivered;
+
+        emit StatusUpdated(batchId, Status.Stored, Status.Delivered, msg.sender);
     }
 
     // =====================================================================
@@ -312,6 +343,13 @@ contract ProvenanceRegistry is AccessControl, IProvenanceRegistry {
     function _requireBatch(uint256 batchId) internal view returns (Batch storage batch) {
         if (batchId == 0 || batchId > _batchCount) revert BatchNotFound(batchId);
         return _batches[batchId];
+    }
+
+    /// @dev Reverts with EmptyDocument if the CID or the content hash is missing.
+    function _requireDocument(DocumentRef calldata doc) private pure {
+        if (bytes(doc.cid).length == 0 || doc.contentHash == bytes32(0)) {
+            revert EmptyDocument();
+        }
     }
 
     /// @dev DRAFT ONLY. Every TODO write function ends here. It reverts with
