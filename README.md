@@ -8,15 +8,15 @@ A shared, tamper-evident record of a prescription drug lot's **custody, temperat
 
 Solidity 0.8 · Polygon Amoy testnet · Hardhat 3 · OpenZeppelin AccessControl · React + ethers.js · IPFS
 
-> **Current milestone: Smart Contract Draft (11/01).**
+> **Current milestone: Midterm progress update (11/15).**
 >
-> - The contract interface is complete: types, events, errors, and every function signature, with comments explaining each.
-> - The draft contract compiles with **no warnings** and has roles, storage, read-only views and access control in place.
-> - Each write function lists its logic as commented `TODO` steps (implementation is due with the 11/15 Amoy prototype).
+> - **Implemented:** the custody journey. `registerBatch`, `initiateTransfer`, `acceptTransfer` and `markDelivered` work, so a lot can go manufacturer → distributor → pharmacy → delivered, with every hand-off signed by both sides.
+> - **Demo:** [`scripts/demo.js`](scripts/demo.js) runs that journey on a local chain, shows two blocked attempts (no role; wrong recipient), and rebuilds the lot's history from events, the way the patient verify page will.
+> - **In progress:** `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog`, `reportExcursion` (still revert `NotImplemented()`), plus IPFS upload, the oracle and the frontend.
 > - `npm test` → **30 passing, 15 pending** (the pending ones are the state-machine tests still to write). Hardhat's last summary line counts the pending tests too and prints `45 passing (45 mocha)`.
 >
-> **Quick start:** `npm ci && npm test && npx hardhat run scripts/deploy.js` (no `.env` or wallet needed).
-> To review the draft, see [`contracts/interfaces/IProvenanceRegistry.sol`](contracts/interfaces/IProvenanceRegistry.sol), [`contracts/ProvenanceRegistry.sol`](contracts/ProvenanceRegistry.sol) and [`contracts/README.md`](contracts/README.md).
+> **Quick start:** `npm ci && npm test && npx hardhat run scripts/demo.js` (no `.env` or wallet needed).
+> To review the contract, see [`contracts/interfaces/IProvenanceRegistry.sol`](contracts/interfaces/IProvenanceRegistry.sol), [`contracts/ProvenanceRegistry.sol`](contracts/ProvenanceRegistry.sol) and [`contracts/README.md`](contracts/README.md).
 
 ## Contents
 
@@ -74,7 +74,7 @@ flowchart LR
     VER -- "read-only RPC" --> REG
 ```
 
-Fig. 1 links off-chain files on-chain by content hash (CID), so later edits are detectable. A CID is not a plain hash of the file's bytes, so the draft stores the CID **and** a keccak256 hash of those bytes (*proposed, O1*).
+Fig. 1 links off-chain files on-chain by content hash (CID), so later edits are detectable. A CID is not a plain hash of the file's bytes, so the contract stores the CID **and** a keccak256 hash of those bytes (*proposed, O1*).
 
 | # | Data flow | On-chain call(s) |
 |---|---|---|
@@ -151,17 +151,18 @@ function totalBatches() external view returns (uint256);
 function batchIdOf(bytes32 productHash) external view returns (uint256);
 ```
 
-**[`contracts/ProvenanceRegistry.sol`](contracts/ProvenanceRegistry.sol)** is the draft implementation on OpenZeppelin `AccessControl`.
+**[`contracts/ProvenanceRegistry.sol`](contracts/ProvenanceRegistry.sol)** is the implementation on OpenZeppelin `AccessControl`.
 
-| Part | Draft status |
+| Part | Status |
 |---|---|
 | Role constants and the constructor (the regulator is admin of the organization roles) | ✅ done |
 | Storage layout (lot records, duplicate check, state saved for cancelling a hand-off) | ✅ done |
 | Access control on every write (`onlyRole`, `onlyEitherRole`) | ✅ done, tested |
 | Read-only views (`verifyBatch`, `totalBatches`, `batchIdOf`) | ✅ done, tested |
-| Write-function bodies | 📝 numbered `TODO` steps, revert `NotImplemented()` (due 11/15) |
+| Custody journey: `registerBatch`, `initiateTransfer`, `acceptTransfer`, `markDelivered` | ✅ done, run end to end by `scripts/demo.js` (unit tests pending) |
+| `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog`, `reportExcursion` | 📝 in progress: numbered `TODO` steps, revert `NotImplemented()` (due 11/25) |
 
-The proposal leaves some details open: which function causes each transition, how hand-offs work, field types, and how IPFS files are verified. The draft fills each gap with a **proposed** answer, tagged in code as `PROPOSED (C1)` etc. and listed in [`docs/design-decisions.md`](docs/design-decisions.md) for the team to confirm.
+The proposal leaves some details open: which function causes each transition, how hand-offs work, field types, and how IPFS files are verified. The contract fills each gap with a **proposed** answer, tagged in code as `PROPOSED (C1)` etc. and listed in [`docs/design-decisions.md`](docs/design-decisions.md) for the team to confirm.
 
 ## Repository layout
 
@@ -169,13 +170,14 @@ The proposal leaves some details open: which function causes each transition, ho
 cse540-pharma-provenance/
 ├── contracts/
 │   ├── interfaces/IProvenanceRegistry.sol   cross-team API: types, events, errors, signatures (NatSpec)
-│   ├── ProvenanceRegistry.sol               draft implementation (AccessControl, storage, TODO bodies)
+│   ├── ProvenanceRegistry.sol               implementation (custody journey done; 6 write functions still TODO)
 │   └── README.md                            roles, data model, transition table, events, how to implement
 ├── test/
 │   └── ProvenanceRegistry.test.js           mocha + chai + ethers: 30 passing, 15 pending
 ├── scripts/
 │   ├── deploy.js                            deploys and writes deployments/<network>.json
-│   └── grant-roles.js                       regulator onboards the four organization roles
+│   ├── grant-roles.js                       regulator onboards the four organization roles
+│   └── demo.js                              runs one lot manufacturer -> distributor -> pharmacy and prints its history
 ├── deployments/                             address + ABI + deployBlock per network (hand-off to frontend/oracle)
 ├── frontend/                                [planned] React + ethers.js role dashboards and patient verify page
 ├── oracle/                                  [planned] sensor simulator, oracle script, IPFS helpers
@@ -237,6 +239,8 @@ The first compile downloads the Solidity compiler (0.8.34) automatically. You do
 | `npm run node` | Start a local JSON-RPC chain at `http://127.0.0.1:8545` (chainId 31337) with 20 funded test accounts. |
 | `npm run deploy:local` | Deploy to that local chain and write `deployments/localhost.json`. |
 | `npm run roles:local` | Onboard demo organizations on the local chain. |
+| `npx hardhat run scripts/demo.js` | Run the custody-journey demo on a throwaway in-process chain (deploys and onboards roles itself). |
+| `npx hardhat run scripts/demo.js --network localhost` | Run the same demo against the local chain set up by `deploy:local` and `roles:local`. Prefix `PAUSE=1` to pause between steps. |
 | `npm run deploy:amoy` | Deploy to Polygon Amoy and write `deployments/amoy.json`. |
 | `npm run roles:amoy` | Onboard organizations on Amoy (addresses from `.env`). |
 | `npm run clean` | Delete build outputs (`artifacts/`, `cache/`). |
@@ -252,7 +256,10 @@ npm run node
 # terminal 2
 npm run deploy:local     # regulator = account #0
 npm run roles:local      # MANUFACTURER=#1, DISTRIBUTOR=#2, RETAILER=#3, ORACLE=#4 (Hardhat test accounts)
+PAUSE=1 npx hardhat run scripts/demo.js --network localhost   # custody-journey demo, Enter between steps
 ```
+
+After restarting `npm run node`, run `deploy:local` and `roles:local` again: the local chain starts empty.
 
 On the local network, the scripts always use these test accounts and ignore any Amoy addresses in `.env`, so the fallback demo works even after `.env` is filled in.
 
@@ -285,7 +292,7 @@ On the local network, the scripts always use these test accounts and ignore any 
 
 Amoy network details: chain ID `80002` · currency `POL` · RPC `https://rpc-amoy.polygon.technology` · explorer [amoy.polygonscan.com](https://amoy.polygonscan.com).
 
-> **Draft limitation:** until the write functions are implemented (11/15), a deployed registry can onboard organizations and answer read-only calls. `registerBatch` and the other writes revert with `NotImplemented()`.
+> **Current limitation:** a deployed registry supports onboarding, the custody journey (`registerBatch`, `initiateTransfer`, `acceptTransfer`, `markDelivered`) and read-only calls. `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog` and `reportExcursion` still revert with `NotImplemented()`.
 
 ## Configuration
 
@@ -327,9 +334,12 @@ Day-to-day tasks live on the GitHub Projects board. This list is the overview.
 ### 11/15: Midterm progress update (Amoy prototype + 5-minute video)
 *Proposed internal dates: freeze 11/11 · integration session 11/12 · submit 11/13*
 - **Contract:**
-  - [ ] Implement all write functions and turn the pending tests into real tests, including revert cases. The full-journey test moves to `test/integration/` for 11/25 (D4).
+  - [x] Custody journey: `registerBatch`, `initiateTransfer`, `acceptTransfer`, `markDelivered`.
+  - [x] `scripts/demo.js`: runs the custody journey on a local chain for the video (blocked attempts + history from events).
+  - [ ] Remaining write functions: `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog`, `reportExcursion`.
+  - [ ] Turn the pending tests into real tests, including revert cases. The full-journey test moves to `test/integration/` for 11/25 (D4).
   - [ ] First Amoy deploy, `deployments/amoy.json` committed, source verified on Polygonscan.
-  - [ ] `scripts/seed-demo.js` to create demo lots for the video.
+  - [ ] `scripts/seed-demo.js` to create demo lots on Amoy.
 - **Off-chain:**
   - [ ] Decide O1 (hash rule), O2 (schemas) and O3 (upload path).
   - [ ] Upload helper.

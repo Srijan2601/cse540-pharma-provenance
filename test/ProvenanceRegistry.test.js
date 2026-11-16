@@ -228,11 +228,12 @@ describe("ProvenanceRegistry (draft)", function () {
         }
       });
 
-      it(`${call.fn}: lets ${who} through to the draft body (NotImplemented)`, async function () {
+      it(`${call.fn}: lets ${who} past the role check`, async function () {
         const { registry, signers } = await networkHelpers.loadFixture(deployRegistryFixture);
+        const roleError = call.role ? "AccessControlUnauthorizedAccount" : "MissingEitherRole";
         await expect(
           registry.connect(signers[call.allowed])[call.fn](...call.args(signers)),
-        ).to.be.revertedWithCustomError(registry, "NotImplemented");
+        ).to.not.be.revertedWithCustomError(registry, roleError);
       });
     }
   });
