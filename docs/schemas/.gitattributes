@@ -1,0 +1,5 @@
+# The example files are hashed byte for byte: their CIDs and content hashes are
+# quoted in README.md and checked by oracle/test/documents.test.js. Git must
+# therefore never convert their line endings (as core.autocrlf does on Windows).
+examples/** -text
+examples/attachments/*.enc binary

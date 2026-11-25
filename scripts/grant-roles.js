@@ -14,6 +14,11 @@
 //   REGISTRY_ADDRESS (optional) overrides the address in deployments/<network>.json
 //
 // Granting is idempotent: accounts that already hold a role are skipped.
+//
+// Locally this leaves test accounts #5 and above without a role. scripts/demo.js
+// needs a second distributor (account #6) for its cancelled hand-off and has
+// its own regulator grant that role in its first step, so nothing extra is
+// needed here.
 import { network } from "hardhat";
 import { readFile } from "node:fs/promises";
 
@@ -34,7 +39,11 @@ async function registryAddress() {
   try {
     return JSON.parse(await readFile(file, "utf8")).address;
   } catch {
-    throw new Error(`No deployments/${networkName}.json found. Deploy first (${deployCommand}) or set REGISTRY_ADDRESS.`);
+    // REGISTRY_ADDRESS is only honoured on public networks (see fromEnv), so
+    // only suggest it there.
+    throw new Error(
+      `No deployments/${networkName}.json found. Deploy first (${deployCommand})${isLocal ? "" : " or set REGISTRY_ADDRESS"}.`,
+    );
   }
 }
 

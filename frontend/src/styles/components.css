@@ -1,0 +1,510 @@
+/*
+ * Shared building blocks: cards, buttons, forms, badges, notices, tables and
+ * the lot rows of the dashboard. Colours and spacing come from the tokens in
+ * base.css.
+ */
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+}
+
+.card > :last-child {
+  margin-bottom: 0;
+}
+
+.card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.card__header > * {
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--space-4);
+  }
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px; /* a comfortable touch target */
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  color: #ffffff;
+}
+
+.button--secondary {
+  background: var(--color-surface);
+  color: var(--color-accent);
+}
+
+.button--secondary:hover {
+  background: var(--color-accent-tint);
+  color: var(--color-accent-dark);
+}
+
+.button--danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.button--danger:hover {
+  background: #7a140f;
+  border-color: #7a140f;
+}
+
+.button--small {
+  min-height: 36px;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.9rem;
+}
+
+/* A disabled button stays readable; the cursor and the muted look say it cannot be used right now. */
+.button:disabled {
+  background: var(--color-neutral-tint);
+  border-color: var(--color-border);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* ---------- Forms ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.field__label {
+  font-weight: 600;
+}
+
+.field__hint {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.field__error {
+  color: var(--color-danger);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-border-strong);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+/* An invalid field gets a thicker red border as well as its error text below. */
+.input[aria-invalid="true"],
+.textarea[aria-invalid="true"] {
+  border-color: var(--color-danger);
+  border-width: 3px;
+}
+
+.form-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+.form-grid__wide {
+  grid-column: 1 / -1;
+}
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.checkbox input {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: var(--color-accent);
+  flex: none;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.inline-form > .field {
+  flex: 1 1 220px;
+}
+
+/* ---------- Badges ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* The badge always spells the status out; the colour only reinforces it. */
+.badge--ok {
+  color: var(--color-success);
+  background: var(--color-success-tint);
+}
+
+.badge--active {
+  color: var(--color-accent);
+  background: var(--color-accent-tint);
+}
+
+.badge--danger {
+  color: var(--color-danger);
+  background: var(--color-danger-tint);
+}
+
+.badge-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* ---------- Notices ---------- */
+
+.notice {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-left-width: 6px;
+  border-radius: var(--radius);
+  background: var(--color-neutral-tint);
+}
+
+.notice__icon {
+  flex: none;
+  margin-top: 2px;
+}
+
+.notice__body {
+  min-width: 0;
+}
+
+.notice__body > :last-child {
+  margin-bottom: 0;
+}
+
+.notice__title {
+  margin: 0 0 var(--space-1);
+  font-weight: 700;
+}
+
+.notice--success {
+  border-color: var(--color-success);
+  background: var(--color-success-tint);
+}
+
+.notice--success .notice__icon {
+  color: var(--color-success);
+}
+
+.notice--warning {
+  border-color: var(--color-warning);
+  background: var(--color-warning-tint);
+}
+
+.notice--warning .notice__icon {
+  color: var(--color-warning);
+}
+
+.notice--error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-tint);
+}
+
+.notice--error .notice__icon {
+  color: var(--color-danger);
+}
+
+.notice--info .notice__icon {
+  color: var(--color-accent);
+}
+
+/* A shell command in an instruction: its own dark block, wrapped rather than scrolled on a phone. */
+.command-block {
+  display: block;
+  margin: var(--space-1) 0 var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 6px;
+  background: #13212b;
+  color: #f2f5f7;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+/* Numbered instructions (see CommandSteps.jsx). */
+.steps {
+  margin: 0 0 var(--space-3);
+  padding-left: 1.4rem;
+}
+
+.steps li + li {
+  margin-top: var(--space-2);
+}
+
+/* ---------- Tables ---------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.table--compact th,
+.table--compact td {
+  padding: var(--space-1) var(--space-2);
+}
+
+/*
+ * On a narrow screen a wide table becomes a list of small cards: each row is a
+ * block and each cell is labelled with its column heading (taken from the
+ * cell's data-label attribute), so nothing has to scroll sideways.
+ */
+@media (max-width: 640px) {
+  .table--stacked thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table--stacked tr {
+    display: block;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .table--stacked td {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-1) 0;
+    border: 0;
+  }
+
+  .table--stacked td::before {
+    content: attr(data-label);
+    flex: 0 0 7.5rem;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+}
+
+/* ---------- Dashboard: sign-in and lot rows ---------- */
+
+.account-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.lot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lot-row {
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.lot-row:first-child {
+  border-top: 0;
+  padding-top: var(--space-2);
+}
+
+.lot-row:last-child {
+  padding-bottom: 0;
+}
+
+.lot-row__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.lot-row__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* The lot number after the product name is a detail, not part of the heading's emphasis. */
+.lot-row__title .muted {
+  font-weight: 400;
+}
+
+/* The result of an action sits clear of the buttons or the form above it. */
+.lot-row > .notice,
+.lot-row > [role="status"] {
+  margin-top: var(--space-3);
+}
+
+.lot-row__meta {
+  margin: var(--space-1) 0 var(--space-3);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.lot-row__panel {
+  margin-top: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-page);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+/* ---------- QR code ---------- */
+
+.qr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.qr__image {
+  display: block;
+  width: 200px;
+  height: 200px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.qr__caption {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+/* ---------- Key display ---------- */
+
+.secret {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3);
+  border: 2px dashed var(--color-border-strong);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+
+.secret code {
+  flex: 1 1 200px;
+  font-size: 0.95rem;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* People who ask for less motion get a still ring; the text next to it still says "working". */
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}

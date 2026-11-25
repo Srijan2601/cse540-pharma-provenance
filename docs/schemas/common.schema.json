@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cse540-pharma-provenance.example/schemas/common.schema.json",
+  "title": "Shared definitions for the off-chain documents",
+  "description": "Types used by more than one document schema. Numbers mirror the smart contract: temperatures are integers in tenths of a degree Celsius (int16) and times are integers in Unix seconds (uint64). The $id values are identifiers only; nothing is fetched from them.",
+  "$defs": {
+    "chainId": {
+      "description": "EIP-155 chain id of the network the registry is deployed on (31337 = local Hardhat node, 80002 = Polygon Amoy). Together with 'registry' it binds a document to one deployment.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "address": {
+      "description": "An EVM address: 0x followed by 40 hex digits. If it mixes upper and lower case, the EIP-55 checksum must be correct.",
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]{40}$"
+    },
+    "bytes32": {
+      "description": "A 32-byte value as 0x followed by 64 lower-case hex digits, the form ethers.keccak256 returns.",
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$"
+    },
+    "cid": {
+      "description": "An IPFS content identifier: a CIDv1 in lower-case base32 (starts with 'b') or a legacy CIDv0 (starts with 'Qm').",
+      "type": "string",
+      "pattern": "^(?:b[a-z2-7]{20,127}|Qm[1-9A-HJ-NP-Za-km-z]{44})$"
+    },
+    "lotId": {
+      "description": "The lot's id in the registry (Batch.id): 1, 2, 3, ... It binds a document to one lot.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "unixSeconds": {
+      "description": "A point in time as whole seconds since 1970-01-01T00:00:00Z. The upper bound is the year 9999, which also rejects a value given in milliseconds by mistake.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 253402300799
+    },
+    "tenthsC": {
+      "description": "A temperature in tenths of a degree Celsius, as an integer in the contract's int16 range (5.4 C is 54, -20.0 C is -200).",
+      "type": "integer",
+      "minimum": -32768,
+      "maximum": 32767
+    },
+    "temperatureRange": {
+      "description": "The allowed storage temperature range, both ends inclusive. minTenthsC must be lower than maxTenthsC, and both must equal the values registered on-chain (Batch.minTempTenthsC / maxTempTenthsC).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minTenthsC", "maxTenthsC"],
+      "properties": {
+        "minTenthsC": { "$ref": "#/$defs/tenthsC" },
+        "maxTenthsC": { "$ref": "#/$defs/tenthsC" }
+      }
+    },
+    "encryption": {
+      "description": "null for a file uploaded as plaintext. Otherwise the scheme that produced the uploaded bytes: AES-256-GCM in envelope version 1 (byte 0 = 0x01, bytes 1..12 = IV, then ciphertext and 16-byte tag). The key is shared out of band and is never part of any document.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["scheme", "envelope"],
+      "properties": {
+        "scheme": { "type": "string", "const": "AES-256-GCM" },
+        "envelope": { "type": "integer", "const": 1 }
+      }
+    },
+    "attachment": {
+      "description": "A file that belongs to the document and is stored on IPFS next to it. 'cid', 'contentHash' and 'size' describe the bytes exactly as uploaded, which for an encrypted attachment means the encryption envelope, so anyone can check integrity without the key.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind", "cid", "contentHash", "mediaType", "size", "encryption"],
+      "properties": {
+        "name": {
+          "description": "File name to show to a person.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "kind": {
+          "description": "What the file is, in lower-case kebab case, for example certificate-of-analysis, storage-instructions or commercial-invoice.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 64
+        },
+        "cid": { "$ref": "#/$defs/cid" },
+        "contentHash": {
+          "description": "keccak256 of the uploaded bytes.",
+          "$ref": "#/$defs/bytes32"
+        },
+        "mediaType": {
+          "description": "Media type of the original (decrypted) file, for example application/pdf.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9!#$&^_.+-]*/[a-z0-9][a-z0-9!#$&^_.+-]*$",
+          "maxLength": 127
+        },
+        "size": {
+          "description": "Number of uploaded bytes.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "encryption": { "$ref": "#/$defs/encryption" }
+      }
+    },
+    "attachments": {
+      "description": "Files that belong to the document. May be empty.",
+      "type": "array",
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/attachment" }
+    }
+  }
+}

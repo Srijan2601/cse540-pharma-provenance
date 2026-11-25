@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cse540-pharma-provenance.example/schemas/sensor-log.schema.json",
+  "title": "Sensor log, version 1",
+  "description": "One batch of temperature readings for one lot. The IoT oracle uploads it to IPFS and then anchors its CID and keccak256 content hash with anchorSensorLog, or with reportExcursion when the excursion rule triggered. Public plaintext: the verify page plots it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "chainId",
+    "registry",
+    "lotId",
+    "sensorId",
+    "scenario",
+    "range",
+    "startedAt",
+    "endedAt",
+    "readings",
+    "excursion"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "description": "Version of this document format.",
+      "type": "integer",
+      "const": 1
+    },
+    "type": {
+      "description": "Document type discriminator.",
+      "type": "string",
+      "const": "sensor-log"
+    },
+    "chainId": { "$ref": "common.schema.json#/$defs/chainId" },
+    "registry": {
+      "description": "Address of the ProvenanceRegistry contract the lot is registered in.",
+      "$ref": "common.schema.json#/$defs/address"
+    },
+    "lotId": { "$ref": "common.schema.json#/$defs/lotId" },
+    "sensorId": {
+      "description": "Identifier of the sensor (or simulated sensor) that took the readings.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "maxLength": 64
+    },
+    "scenario": {
+      "description": "Where the readings come from, in lower-case kebab case. The simulator writes its scenario name: normal, excursion, freeze or spike. Real sensors are out of scope for this project.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 32
+    },
+    "range": {
+      "description": "The lot's allowed range at the time of logging, copied from the chain so the log can be read on its own.",
+      "$ref": "common.schema.json#/$defs/temperatureRange"
+    },
+    "startedAt": {
+      "description": "Start of the period the log covers. Not later than the first reading.",
+      "$ref": "common.schema.json#/$defs/unixSeconds"
+    },
+    "endedAt": {
+      "description": "End of the period the log covers. Not earlier than the last reading.",
+      "$ref": "common.schema.json#/$defs/unixSeconds"
+    },
+    "readings": {
+      "description": "The readings, ordered by strictly increasing time. At most 2000, which keeps a log within one 256 KiB IPFS chunk so its CID is the same on every backend.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["t", "tenthsC"],
+        "properties": {
+          "t": {
+            "description": "When the reading was taken.",
+            "$ref": "common.schema.json#/$defs/unixSeconds"
+          },
+          "tenthsC": {
+            "description": "The measured temperature.",
+            "$ref": "common.schema.json#/$defs/tenthsC"
+          }
+        }
+      }
+    },
+    "excursion": {
+      "description": "null when the excursion rule did not trigger for this log. Otherwise the reading that the oracle reports on-chain with reportExcursion(lotId, tenthsC, t, ...): it must be one of the readings above and must lie outside 'range'.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["t", "tenthsC", "rule"],
+      "properties": {
+        "t": {
+          "description": "Time of the reported reading; equals observedAt in the ExcursionReported event.",
+          "$ref": "common.schema.json#/$defs/unixSeconds"
+        },
+        "tenthsC": {
+          "description": "The reported reading; equals readingTenthsC in the ExcursionReported event.",
+          "$ref": "common.schema.json#/$defs/tenthsC"
+        },
+        "rule": {
+          "description": "Human-readable description of the rule that triggered, for example '3 consecutive readings outside 2.0 C to 8.0 C'.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    }
+  }
+}

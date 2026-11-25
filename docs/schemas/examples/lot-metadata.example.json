@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "type": "lot-metadata",
+  "chainId": 31337,
+  "registry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "productCode": "DEMO-EXM-100",
+  "lotNumber": "LOT-2026-0001",
+  "productName": "Examplamab 100 mg/mL solution for injection (synthetic product)",
+  "manufacturerName": "Demo Biologics Manufacturing (synthetic organization)",
+  "site": "Plant 1, Example City",
+  "manufactureDate": 1793577600,
+  "expiryDate": 1856649600,
+  "storage": {
+    "minTenthsC": 20,
+    "maxTenthsC": 80
+  },
+  "attachments": [
+    {
+      "name": "storage-instructions.txt",
+      "kind": "storage-instructions",
+      "cid": "bafkreigie2gvculpze6ztwnkazg7lns6ecwssasx2xkcv7xjxdnifwkviq",
+      "contentHash": "0xc35d0a807ea978dcf50ba2d38372aad5bcf1b86057602401b1a7d836cd1e5db9",
+      "mediaType": "text/plain",
+      "size": 334,
+      "encryption": null
+    },
+    {
+      "name": "certificate-of-analysis.txt",
+      "kind": "certificate-of-analysis",
+      "cid": "bafkreiamsw6sjqwbn32dobtz7jm3tnrsgmnic46lxeqgoiyq4pzzxxbt5m",
+      "contentHash": "0x6e16d391b4c3cb32be75dfe48cb6bddf63d22098fbdb5e2ce56976a0dd177d46",
+      "mediaType": "text/plain",
+      "size": 483,
+      "encryption": {
+        "scheme": "AES-256-GCM",
+        "envelope": 1
+      }
+    }
+  ]
+}

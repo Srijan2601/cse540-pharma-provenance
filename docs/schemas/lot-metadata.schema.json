@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cse540-pharma-provenance.example/schemas/lot-metadata.schema.json",
+  "title": "Lot metadata, version 1",
+  "description": "Describes one drug lot. The manufacturer uploads it to IPFS and then passes its CID and keccak256 content hash to registerBatch as Batch.metadata. Public plaintext: patients read it on the verify page.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "chainId",
+    "registry",
+    "productCode",
+    "lotNumber",
+    "productName",
+    "manufacturerName",
+    "site",
+    "manufactureDate",
+    "expiryDate",
+    "storage",
+    "attachments"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "description": "Version of this document format.",
+      "type": "integer",
+      "const": 1
+    },
+    "type": {
+      "description": "Document type discriminator.",
+      "type": "string",
+      "const": "lot-metadata"
+    },
+    "chainId": { "$ref": "common.schema.json#/$defs/chainId" },
+    "registry": {
+      "description": "Address of the ProvenanceRegistry contract the lot is registered in.",
+      "$ref": "common.schema.json#/$defs/address"
+    },
+    "productCode": {
+      "description": "The manufacturer's product identifier. The on-chain productHash is keccak256(abi.encode(string productCode, string lotNumber)), so the value must be reproduced exactly; leading and trailing white space is not allowed.",
+      "type": "string",
+      "pattern": "^\\S(?:.*\\S)?$",
+      "maxLength": 64
+    },
+    "lotNumber": {
+      "description": "The manufacturer's lot (batch) number; the second input of productHash.",
+      "type": "string",
+      "pattern": "^\\S(?:.*\\S)?$",
+      "maxLength": 64
+    },
+    "productName": {
+      "description": "Name of the product as shown to a patient.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "manufacturerName": {
+      "description": "Name of the manufacturing organization. The authoritative identity is the on-chain Batch.manufacturer address; this is a label for people.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "site": {
+      "description": "Manufacturing site.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "manufactureDate": {
+      "description": "When the lot was manufactured; the same value is passed to registerBatch.",
+      "$ref": "common.schema.json#/$defs/unixSeconds"
+    },
+    "expiryDate": {
+      "description": "When the lot expires. Must be later than manufactureDate.",
+      "$ref": "common.schema.json#/$defs/unixSeconds"
+    },
+    "storage": {
+      "description": "Required storage temperature range; the same values are passed to registerBatch.",
+      "$ref": "common.schema.json#/$defs/temperatureRange"
+    },
+    "attachments": {
+      "description": "Supporting files, for example the manufacturer's certificate of analysis (design decision C6). Confidential ones are encrypted before upload.",
+      "$ref": "common.schema.json#/$defs/attachments"
+    }
+  }
+}
