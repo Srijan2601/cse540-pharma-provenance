@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "type": "sensor-log",
+  "chainId": 31337,
+  "registry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "lotId": 1,
+  "sensorId": "sim-lot-1",
+  "scenario": "normal",
+  "range": {
+    "minTenthsC": 20,
+    "maxTenthsC": 80
+  },
+  "startedAt": 1794301200,
+  "endedAt": 1794301860,
+  "readings": [
+    {
+      "t": 1794301200,
+      "tenthsC": 51
+    },
+    {
+      "t": 1794301260,
+      "tenthsC": 52
+    },
+    {
+      "t": 1794301320,
+      "tenthsC": 50
+    },
+    {
+      "t": 1794301380,
+      "tenthsC": 49
+    },
+    {
+      "t": 1794301440,
+      "tenthsC": 51
+    },
+    {
+      "t": 1794301500,
+      "tenthsC": 53
+    },
+    {
+      "t": 1794301560,
+      "tenthsC": 54
+    },
+    {
+      "t": 1794301620,
+      "tenthsC": 52
+    },
+    {
+      "t": 1794301680,
+      "tenthsC": 51
+    },
+    {
+      "t": 1794301740,
+      "tenthsC": 50
+    },
+    {
+      "t": 1794301800,
+      "tenthsC": 52
+    },
+    {
+      "t": 1794301860,
+      "tenthsC": 51
+    }
+  ],
+  "excursion": null
+}

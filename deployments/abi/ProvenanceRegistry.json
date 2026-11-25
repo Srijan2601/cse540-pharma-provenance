@@ -1,0 +1,1196 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "regulator",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "AccessControlBadConfirmation",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "neededRole",
+        "type": "bytes32"
+      }
+    ],
+    "name": "AccessControlUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "BatchNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "productHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "existingBatchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "DuplicateProduct",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EmptyDocument",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EmptyReason",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      }
+    ],
+    "name": "InvalidRecipient",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum IProvenanceRegistry.Status",
+        "name": "current",
+        "type": "uint8"
+      }
+    ],
+    "name": "InvalidStatus",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum IProvenanceRegistry.Status",
+        "name": "from",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum IProvenanceRegistry.Status",
+        "name": "to",
+        "type": "uint8"
+      }
+    ],
+    "name": "InvalidStatusTransition",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int16",
+        "name": "minTempTenthsC",
+        "type": "int16"
+      },
+      {
+        "internalType": "int16",
+        "name": "maxTempTenthsC",
+        "type": "int16"
+      }
+    ],
+    "name": "InvalidTemperatureRange",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "timestamp",
+        "type": "uint64"
+      }
+    ],
+    "name": "InvalidTimestamp",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "roleA",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "roleB",
+        "type": "bytes32"
+      }
+    ],
+    "name": "MissingEitherRole",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "NoPendingTransfer",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      }
+    ],
+    "name": "NotCustodian",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      }
+    ],
+    "name": "NotPendingCustodian",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int16",
+        "name": "readingTenthsC",
+        "type": "int16"
+      },
+      {
+        "internalType": "int16",
+        "name": "minTempTenthsC",
+        "type": "int16"
+      },
+      {
+        "internalType": "int16",
+        "name": "maxTempTenthsC",
+        "type": "int16"
+      }
+    ],
+    "name": "ReadingWithinRange",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "pendingCustodian",
+        "type": "address"
+      }
+    ],
+    "name": "TransferAlreadyPending",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroProductHash",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "regulator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "BatchRecalled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "manufacturer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "productHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "metadataCid",
+        "type": "string"
+      }
+    ],
+    "name": "BatchRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "regulator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "cid",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "CertificateIssued",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      }
+    ],
+    "name": "CustodyTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "logIndex",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "int16",
+        "name": "readingTenthsC",
+        "type": "int16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "observedAt",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "logCid",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "logContentHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ExcursionReported",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "previousAdminRole",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "newAdminRole",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RoleAdminChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "RoleGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "RoleRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint32",
+        "name": "logIndex",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "cid",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "SensorLogAnchored",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum IProvenanceRegistry.Status",
+        "name": "previousStatus",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum IProvenanceRegistry.Status",
+        "name": "newStatus",
+        "type": "uint8"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "by",
+        "type": "address"
+      }
+    ],
+    "name": "StatusUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      }
+    ],
+    "name": "TransferCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      }
+    ],
+    "name": "TransferInitiated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "DEFAULT_ADMIN_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "DISTRIBUTOR_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MANUFACTURER_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ORACLE_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "REGULATOR_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "RETAILER_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptTransfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "cid",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "contentHash",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct IProvenanceRegistry.DocumentRef",
+        "name": "sensorLog",
+        "type": "tuple"
+      }
+    ],
+    "name": "anchorSensorLog",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "productHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "batchIdOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "cancelTransfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getRoleAdmin",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "grantRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "hasRole",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      }
+    ],
+    "name": "initiateTransfer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "cid",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "contentHash",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct IProvenanceRegistry.DocumentRef",
+        "name": "certificate",
+        "type": "tuple"
+      }
+    ],
+    "name": "issueCertificate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "markDelivered",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "recallBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "productHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "manufactureDate",
+        "type": "uint64"
+      },
+      {
+        "internalType": "int16",
+        "name": "minTempTenthsC",
+        "type": "int16"
+      },
+      {
+        "internalType": "int16",
+        "name": "maxTempTenthsC",
+        "type": "int16"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "cid",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "contentHash",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct IProvenanceRegistry.DocumentRef",
+        "name": "metadata",
+        "type": "tuple"
+      }
+    ],
+    "name": "registerBatch",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "callerConfirmation",
+        "type": "address"
+      }
+    ],
+    "name": "renounceRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "int16",
+        "name": "readingTenthsC",
+        "type": "int16"
+      },
+      {
+        "internalType": "uint64",
+        "name": "observedAt",
+        "type": "uint64"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "cid",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "contentHash",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct IProvenanceRegistry.DocumentRef",
+        "name": "sensorLog",
+        "type": "tuple"
+      }
+    ],
+    "name": "reportExcursion",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "revokeRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalBatches",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum IProvenanceRegistry.Status",
+        "name": "newStatus",
+        "type": "uint8"
+      }
+    ],
+    "name": "updateStatus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "batchId",
+        "type": "uint256"
+      }
+    ],
+    "name": "verifyBatch",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "productHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "manufacturer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "manufactureDate",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "registeredAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "address",
+            "name": "custodian",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "pendingCustodian",
+            "type": "address"
+          },
+          {
+            "internalType": "enum IProvenanceRegistry.Status",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "int16",
+            "name": "minTempTenthsC",
+            "type": "int16"
+          },
+          {
+            "internalType": "int16",
+            "name": "maxTempTenthsC",
+            "type": "int16"
+          },
+          {
+            "internalType": "uint32",
+            "name": "sensorLogCount",
+            "type": "uint32"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "cid",
+                "type": "string"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "contentHash",
+                "type": "bytes32"
+              }
+            ],
+            "internalType": "struct IProvenanceRegistry.DocumentRef",
+            "name": "metadata",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "cid",
+                "type": "string"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "contentHash",
+                "type": "bytes32"
+              }
+            ],
+            "internalType": "struct IProvenanceRegistry.DocumentRef",
+            "name": "certificate",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "string",
+                "name": "cid",
+                "type": "string"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "contentHash",
+                "type": "bytes32"
+              }
+            ],
+            "internalType": "struct IProvenanceRegistry.DocumentRef",
+            "name": "latestSensorLog",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct IProvenanceRegistry.Batch",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

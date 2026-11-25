@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "type": "regulator-certificate",
+  "chainId": 31337,
+  "registry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "lotId": 1,
+  "productHash": "0x383e0be318c9c469b8db3be596b5b30ee8c4a6a9e3e2b5f9e08a266fbcd586e2",
+  "certificateNumber": "DMA-2026-000123",
+  "issuerName": "Demo Medicines Agency (synthetic regulator)",
+  "scope": "Batch release",
+  "statement": "The batch documentation for this lot was reviewed and the lot is released for distribution under refrigerated storage at 2.0 C to 8.0 C.",
+  "issuedAt": 1793880000,
+  "validUntil": 1856649600
+}

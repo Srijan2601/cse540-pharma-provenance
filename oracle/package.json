@@ -1,0 +1,32 @@
+{
+  "name": "cse540-pharma-provenance-oracle",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Off-chain half of the cold-chain provenance project: IPFS storage, upload + gateway service, document encryption and schemas, sensor simulator and IoT oracle",
+  "type": "module",
+  "license": "MIT",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:e2e": "node --test test/e2e/real-chain.e2e.js",
+    "service": "node src/cli/main.js serve",
+    "ipfs": "node src/cli/main.js",
+    "ipfs:add": "node src/cli/main.js add",
+    "ipfs:get": "node src/cli/main.js get",
+    "ipfs:verify": "node src/cli/main.js verify",
+    "ipfs:hash": "node src/cli/main.js hash",
+    "doc:validate": "node src/cli/main.js validate",
+    "config": "node src/cli/main.js config",
+    "simulate": "node src/simulator/main.js",
+    "oracle": "node src/oracle/main.js monitor",
+    "oracle:once": "node src/oracle/main.js once",
+    "oracle:check": "node src/oracle/main.js check"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ethers": "^6.17.0"
+  }
+}

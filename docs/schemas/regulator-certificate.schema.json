@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cse540-pharma-provenance.example/schemas/regulator-certificate.schema.json",
+  "title": "Regulator certificate, version 1",
+  "description": "A regulator's certificate for one lot. The regulator uploads it to IPFS and then passes its CID and keccak256 content hash to issueCertificate as Batch.certificate. Public plaintext: patients read it on the verify page.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "chainId",
+    "registry",
+    "lotId",
+    "productHash",
+    "certificateNumber",
+    "issuerName",
+    "scope",
+    "statement",
+    "issuedAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "description": "Version of this document format.",
+      "type": "integer",
+      "const": 1
+    },
+    "type": {
+      "description": "Document type discriminator.",
+      "type": "string",
+      "const": "regulator-certificate"
+    },
+    "chainId": { "$ref": "common.schema.json#/$defs/chainId" },
+    "registry": {
+      "description": "Address of the ProvenanceRegistry contract the lot is registered in.",
+      "$ref": "common.schema.json#/$defs/address"
+    },
+    "lotId": { "$ref": "common.schema.json#/$defs/lotId" },
+    "productHash": {
+      "description": "The lot's on-chain Batch.productHash, keccak256(abi.encode(string productCode, string lotNumber)). Repeating it here ties the certificate to the product as well as to the lot id.",
+      "$ref": "common.schema.json#/$defs/bytes32"
+    },
+    "certificateNumber": {
+      "description": "The regulator's reference number for this certificate.",
+      "type": "string",
+      "pattern": "^\\S(?:.*\\S)?$",
+      "maxLength": 64
+    },
+    "issuerName": {
+      "description": "Name of the issuing authority. The authoritative identity is the address in the CertificateIssued event; this is a label for people.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "scope": {
+      "description": "What the certificate covers, for example 'Batch release' or 'Cold-chain compliance audit'.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "statement": {
+      "description": "The certifying statement in plain language.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "issuedAt": {
+      "description": "When the certificate was issued.",
+      "$ref": "common.schema.json#/$defs/unixSeconds"
+    },
+    "validUntil": {
+      "description": "Optional. When the certificate stops being valid. Must be later than issuedAt.",
+      "$ref": "common.schema.json#/$defs/unixSeconds"
+    },
+    "attachments": {
+      "description": "Optional. Supporting files such as an inspection report.",
+      "$ref": "common.schema.json#/$defs/attachments"
+    }
+  }
+}

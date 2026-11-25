@@ -1,6 +1,12 @@
 # Keeps `main` green (Team Contract: "the main branch always passes tests").
-# Runs the contract compile + unit tests on every push to main and every PR.
-# Needs no secrets: tests use Hardhat's in-process network.
+# Runs on every push to main and on every pull request, as three independent jobs:
+#   contracts  compiles the contracts and runs `hardhat test`: the Mocha and
+#              Solidity tests in test/, including the two checks that the
+#              committed ABI and gas report match the compiled contract
+#   oracle     the unit tests of oracle/ (they need no chain and no network)
+#   frontend   the unit tests of frontend/, then a production build
+# Needs no secrets: the contract tests use Hardhat's in-process network.
+# Not run here: the oracle's end-to-end test (`npm run test:e2e` in oracle/).
 name: CI
 
 on:
@@ -24,4 +30,36 @@ jobs:
       - run: npm ci
       - run: npx hardhat compile
       - run: npx hardhat test
-  # TODO: add frontend/ and oracle/ jobs once those packages have a package.json.
+
+  oracle:
+    name: Test oracle
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: oracle
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: oracle/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  frontend:
+    name: Test + build frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

@@ -2,22 +2,37 @@
   "name": "cse540-pharma-provenance",
   "version": "0.1.0",
   "private": true,
-  "description": "Tamper-evident pharmaceutical cold-chain provenance on Polygon Amoy (CSE 540 Project Group 2)",
+  "description": "Tamper-evident pharmaceutical cold-chain provenance for Polygon Amoy, demoed on a local Hardhat chain (CSE 540 Project Group 2)",
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
-    "compile": "hardhat compile",
+    "setup": "npm ci --no-audit --no-fund && npm ci --prefix oracle --no-audit --no-fund && npm ci --prefix frontend --no-audit --no-fund && npm run compile",
+    "start": "node scripts/stack.js",
+    "oracle": "npm --prefix oracle run --silent oracle --",
+    "oracle:once": "npm --prefix oracle run --silent oracle:once --",
+    "compile": "hardhat compile && node scripts/export-abi.js",
+    "abi:export": "node scripts/export-abi.js",
     "test": "hardhat test",
-    "test:gas": "hardhat test --gas-stats",
+    "test:unit": "node scripts/test-subset.js unit",
+    "test:integration": "node scripts/test-subset.js integration",
+    "test:solidity": "hardhat test solidity",
+    "test:tooling": "node scripts/test-subset.js tooling",
+    "test:gas": "hardhat test mocha --gas-stats",
+    "coverage": "hardhat test --coverage",
+    "gas:report": "hardhat run scripts/gas-report.js",
     "clean": "hardhat clean",
     "node": "hardhat node",
+    "demo": "hardhat run scripts/demo.js",
+    "demo:local": "hardhat run scripts/demo.js --network localhost",
+    "demo:amoy": "hardhat run scripts/demo.js --network amoy",
     "deploy:local": "hardhat run scripts/deploy.js --network localhost",
     "deploy:amoy": "hardhat run scripts/deploy.js --network amoy",
     "roles:local": "hardhat run scripts/grant-roles.js --network localhost",
-    "roles:amoy": "hardhat run scripts/grant-roles.js --network amoy"
+    "roles:amoy": "hardhat run scripts/grant-roles.js --network amoy",
+    "verify:amoy": "hardhat verify etherscan --build-profile default --network amoyVerify --contract contracts/ProvenanceRegistry.sol:ProvenanceRegistry"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.6.1"

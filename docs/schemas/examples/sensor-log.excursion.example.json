@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "type": "sensor-log",
+  "chainId": 31337,
+  "registry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "lotId": 1,
+  "sensorId": "sim-lot-1",
+  "scenario": "excursion",
+  "range": {
+    "minTenthsC": 20,
+    "maxTenthsC": 80
+  },
+  "startedAt": 1794301920,
+  "endedAt": 1794302580,
+  "readings": [
+    {
+      "t": 1794301920,
+      "tenthsC": 52
+    },
+    {
+      "t": 1794301980,
+      "tenthsC": 55
+    },
+    {
+      "t": 1794302040,
+      "tenthsC": 61
+    },
+    {
+      "t": 1794302100,
+      "tenthsC": 68
+    },
+    {
+      "t": 1794302160,
+      "tenthsC": 74
+    },
+    {
+      "t": 1794302220,
+      "tenthsC": 79
+    },
+    {
+      "t": 1794302280,
+      "tenthsC": 83
+    },
+    {
+      "t": 1794302340,
+      "tenthsC": 86
+    },
+    {
+      "t": 1794302400,
+      "tenthsC": 90
+    },
+    {
+      "t": 1794302460,
+      "tenthsC": 93
+    },
+    {
+      "t": 1794302520,
+      "tenthsC": 95
+    },
+    {
+      "t": 1794302580,
+      "tenthsC": 96
+    }
+  ],
+  "excursion": {
+    "t": 1794302400,
+    "tenthsC": 90,
+    "rule": "3 consecutive readings outside 2.0 C to 8.0 C"
+  }
+}

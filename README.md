@@ -2,98 +2,162 @@
 
 [![CI](https://github.com/Srijan2601/cse540-pharma-provenance/actions/workflows/ci.yml/badge.svg)](https://github.com/Srijan2601/cse540-pharma-provenance/actions/workflows/ci.yml)
 
-A shared, tamper-evident record of a prescription drug lot's **custody, temperature condition and certification**. Rival supply-chain companies can write to it, and **anyone, including a patient with no wallet, can verify it** by scanning a QR code.
+A shared, tamper-evident record of a prescription drug lot's **custody, temperature condition and certification**. Rival supply-chain companies write to it, each limited to its own role, and **anyone, including a patient with no wallet, can verify a lot** by scanning a QR code.
 
 **CSE 540: Engineering Blockchain Applications · Project Group 2 · Fall 2026**
 
-Solidity 0.8 · Polygon Amoy testnet · Hardhat 3 · OpenZeppelin AccessControl · React + ethers.js · IPFS
+Solidity 0.8 · Hardhat 3 · OpenZeppelin AccessControl · React + ethers.js · IPFS content addressing · Polygon Amoy (optional)
 
-> **Current milestone: Midterm progress update (11/15).**
->
-> - **Implemented:** the custody journey. `registerBatch`, `initiateTransfer`, `acceptTransfer` and `markDelivered` work, so a lot can go manufacturer → distributor → pharmacy → delivered, with every hand-off signed by both sides.
-> - **Demo:** [`scripts/demo.js`](scripts/demo.js) runs that journey on a local chain, shows two blocked attempts (no role; wrong recipient), and rebuilds the lot's history from events, the way the patient verify page will.
-> - **In progress:** `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog`, `reportExcursion` (still revert `NotImplemented()`), plus IPFS upload, the oracle and the frontend.
-> - `npm test` → **30 passing, 15 pending** (the pending ones are the state-machine tests still to write). Hardhat's last summary line counts the pending tests too and prints `45 passing (45 mocha)`.
->
-> **Quick start:** `npm ci && npm test && npx hardhat run scripts/demo.js` (no `.env` or wallet needed).
-> To review the contract, see [`contracts/interfaces/IProvenanceRegistry.sol`](contracts/interfaces/IProvenanceRegistry.sol), [`contracts/ProvenanceRegistry.sol`](contracts/ProvenanceRegistry.sol) and [`contracts/README.md`](contracts/README.md).
+> **Status: final submission.** The whole system (contract, IoT oracle, file service, web app) runs on one laptop against a local Hardhat chain, with no account, private key or wallet extension. Polygon Amoy is an optional extra: its scripts are in the repository, but nothing is deployed there yet ([details](#polygon-amoy-optional)).
 
-## Contents
+**Contents:** [Quick start](#quick-start) · [Where to look when grading](#where-to-look-when-grading) · [Demo walkthrough](#demo-walkthrough) · [The problem](#the-problem) · [How it works](#how-it-works) · [Where each promised feature lives](#where-each-promised-feature-lives) · [Repository layout](#repository-layout) · [Commands](#commands) · [Testing](#testing) · [Polygon Amoy](#polygon-amoy-optional) · [Configuration](#configuration) · [Design decisions](#design-decisions-and-trust-assumptions) · [Contributing](#contributing) · [Team](#team) · [References](#references-and-license)
 
-1. [The problem](#the-problem)
-2. [How it works](#how-it-works)
-3. [Contract components](#contract-components)
-4. [Repository layout](#repository-layout)
-5. [Setup](#setup)
-6. [Usage: compile, test, deploy](#usage-compile-test-deploy)
-7. [Configuration](#configuration)
-8. [Deployments](#deployments)
-9. [Roadmap and tasks](#roadmap-and-tasks)
-10. [Contributing](#contributing)
-11. [Team](#team)
-12. [References and license](#references-and-license)
+## Quick start
 
----
+You need Node.js 22.13 or newer (it includes npm), Git and a browser. Nothing else: no wallet, no account, no `.env` file. The internet is needed only by `npm run setup`, which downloads the packages and the Solidity compiler (about 15 seconds on the laptop this was checked on, starting with empty caches).
+
+```bash
+git clone https://github.com/Srijan2601/cse540-pharma-provenance.git
+cd cse540-pharma-provenance
+npm run setup          # once: installs the three packages from their lockfiles, compiles the contracts
+npm start -- --seed    # local chain, contract, roles, file service, five demo lots, web app
+```
+
+A few seconds later (about five on the laptop this was checked on) the terminal prints a summary, shortened here, and stays in the foreground until Ctrl+C:
+
+```text
+  Open
+    Web app         http://localhost:5173
+    Verify lot 1    http://localhost:5173/#/verify?lot=1
+  Local test accounts (Organization dashboard > Local test account; no wallet needed)
+    #0  Regulator    0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+    ...              #1 Manufacturer, #2 Distributor, #3 Pharmacy, #4 IoT oracle, #6 Distributor
+  Seeded lots
+    1  Delivered    certified; at the pharmacy; 3 sensor logs; 2 attachments, one of them encrypted
+    2  InTransit    hand-off from the manufacturer to the distributor is open; not certified
+    3  Compromised  certified; at the distributor; an excursion of 9.0 C was reported
+    4  Recalled     certified; recalled by the regulator while at the distributor
+    5  Stored       at the pharmacy; not certified; 2 sensor logs
+    Key for lot 1's encrypted attachment (certificate-of-analysis.txt):
+      <43 characters, a new key on every start>
+```
+
+Three things to try next:
+
+| Try | How | You should see |
+|---|---|---|
+| The patient's view | Open <http://localhost:5173> and click **Lot 1**. No sign-in. | "Record verified", seven files each marked "Matches the … fingerprint", the custody history, the temperature chart and the QR code. |
+| A cold-chain failure | Open the page of **Lot 5**, then in a second terminal: `npm run oracle:once -- --lot 5 --scenario excursion` | Within a few seconds, without reloading, the page changes to "Do not use: a temperature excursion was recorded". |
+| The whole contract in a terminal | `npm run demo` (needs nothing running) | 19 steps with two lots: every role acts, and 26 calls that must fail are refused with the name of their custom error. |
+
+* Ctrl+C stops the chain, the file service and the web app and checks that ports 8545, 8787 and 5173 are free. The chain lives in memory, so every start is a new chain with new lots.
+* `npm run setup` prints two `npm warn deprecated` lines (`inflight`, `glob`). They come from a development-only dependency of the Hardhat toolbox and affect nothing. Do not run `npm audit fix --force`.
+* All of this was checked on macOS with Node.js 22.18. It was not tried on Windows or Linux.
+
+## Where to look when grading
+
+| Criterion | Where it is addressed |
+|---|---|
+| Functional completeness against the proposal | [Where each promised feature lives](#where-each-promised-feature-lives): each proposal item, its code and how to show it, then what is not done |
+| Smart contract quality | [`contracts/README.md`](contracts/README.md): one contract built from a base and three modules, roles, transition table, events, the 17 custom errors, invariants. Every function of [`IProvenanceRegistry.sol`](contracts/interfaces/IProvenanceRegistry.sol) has NatSpec. |
+| Stakeholder interactions and transactions | [Demo walkthrough](#demo-walkthrough) (every role in the web app) and `npm run demo` (every role, and 26 refused calls, in a terminal) |
+| Testing and error handling | [Testing](#testing) and [`docs/testing/README.md`](docs/testing/README.md); each custom error is asserted by name in `test/unit/` |
+| Documentation and code comments | this README, the READMEs of [`contracts/`](contracts/README.md), [`oracle/`](oracle/README.md), [`frontend/`](frontend/README.md) and [`deployments/`](deployments/README.md), and [`docs/design-decisions.md`](docs/design-decisions.md), whose identifiers are cited in code comments; every file in `scripts/` starts with a comment that explains it |
+
+## Demo walkthrough
+
+A script for the demo video: two terminals in the repository folder and one browser. To switch organizations, open **Organization dashboard** and pick another entry in **Local test account**. The local node signs for these accounts, so there is nothing to unlock. Reloading a page signs you out; pick the account again.
+
+1. **Start.** Terminal 1: `npm start -- --seed`, then open <http://localhost:5173>.
+   *See:* the summary above; the home page lists lots 1 to 5 as Delivered, In transit, Compromised, Recalled and Stored.
+2. **Patient, no sign-in.** Click **Lot 1**.
+   *See:* "Record verified. Delivered by the pharmacy."; seven files, each with "Matches the … fingerprint"; ten history entries rebuilt from events; the temperature chart; **This lot's QR code**.
+3. **Encrypted attachment.** Under **Attachment: certificate-of-analysis.txt**, paste the key from the terminal summary into **Key** and click **Decrypt and download**.
+   *See:* "Decrypted. "certificate-of-analysis.txt" was saved to your downloads." A wrong key gives "Decryption failed".
+4. **Regulator onboards an organization.** Sign in as **#0 · Regulator**. In **Organizations**, paste `0x14dC79964da2C08b23698B3D3cc7Ca32193d9955` (test account #7), choose **Distributor**, click **Grant role**.
+   *See:* "Distributor role granted to 0x14dC…9955." and a new row in the table of role holders.
+5. **Manufacturer registers a lot.** Sign in as **#1 · Manufacturer**. Fill in every field of **Register a lot**, both dates included (only the range 2.0 to 8.0 °C is prefilled), attach any small file, tick **Confidential: encrypt before upload**, click **Register lot**.
+   *See:* "Lot 6 is registered.", the lot's QR code, and the key of the attachment, which is shown only once.
+6. **A blocked action.** In **My lots**, on Lot 6: **Start hand-off** → **Another address…** → paste the pharmacy's address `0x90F79bf6EB2c4f870365E785982E1f101E93b906` → **Start hand-off**.
+   *See:* "0x90F7…b906 cannot receive this lot. A manufacturer hands a lot to a distributor; …". This is the contract's `InvalidRecipient` error, found by simulating the call; no transaction is sent.
+7. **Hand-off, first half.** In the same form choose **Distributor · 0x3C44…93BC (test account #2)** and click **Start hand-off**.
+   *See:* Lot 6 is "In transit" with "hand-off open to Distributor 0x3C44…93BC". The manufacturer still holds it.
+8. **Distributor accepts and moves the lot.** Sign in as **#2 · Distributor**. On Lot 6: **Accept hand-off**, **Mark as in transit**, **Mark as stored**, then **Start hand-off** → **Pharmacy · 0x90F7…b906 (test account #3)**.
+   *See:* "Hand-off accepted. This account now holds the lot.", two status updates, then an open hand-off to the pharmacy.
+9. **Pharmacy accepts, delivers and verifies.** Sign in as **#3 · Pharmacy**. On Lot 6: **Accept hand-off**, **Mark delivered**, then **Verify**.
+   *See:* the verify page of lot 6: "Record verified. Delivered by the pharmacy.", its eight history entries, and the note "No regulator certificate has been issued for this lot."
+10. **Regulator certifies.** Sign in as **#0 · Regulator**. Under **All lots**, on Lot 6: **Issue certificate**, fill in the four fields, click **Issue certificate**, then **Verify page**.
+    *See:* "Certificate uploaded and recorded for this lot."; the verify page now shows the certificate with "Matches the on-chain fingerprint", and the note is gone.
+11. **IoT oracle, live.** Open the verify page of **Lot 5** in a second browser tab and leave it open. Terminal 2: `npm run oracle:once -- --lot 5 --scenario excursion`
+    *See:* an `EXCURSION … status=Compromised` line in the terminal. Within about five seconds, without a reload, the page shows "Do not use: a temperature excursion was recorded" and the reading on the chart.
+12. **Regulator recalls.** In the first tab, click **Organization dashboard** (you are still **#0 · Regulator**: moving around the app keeps the sign-in), then under **All lots**, on Lot 5: **Recall**, type a reason, **Recall lot…**, **Confirm recall**.
+    *See:* "Lot recalled. Its verify page now tells people not to use it."; the page of lot 5 in the second tab changes to "Do not use: recalled by the regulator" with the reason.
+13. **A tampered file.** Open the verify page of Lot 1, open **Technical details** under **Lot metadata** and copy the CID. Terminal 2: `echo tampered >> oracle/.ipfs-store/<CID>`. Reload the page.
+    *See:* "Record problem: a file does not match its fingerprint", and "DOES NOT MATCH the on-chain fingerprint" for the lot metadata, whose content is no longer shown. Terminal 1 logs each refused download as `[files] … GET /ipfs/<CID> 500`; that is expected.
+14. **The contract alone.** Ctrl+C in terminal 1 ("Stopped. Ports 8545, 8787, and 5173 are free."), then `npm run demo`.
+    *See:* the terminal-only walkthrough: 25 transactions marked `OK`, 26 refused calls marked `BLOCKED`, then the patient's view of both lots rebuilt from events. `PAUSE=1 npm run demo` waits for Enter between steps.
+
+Notes for the recording:
+
+* **QR code on a phone (optional).** `npm start -- --seed --lan` also listens on the local network and makes the QR codes point at the laptop's address; the summary prints that address. It was checked by opening that address in a browser on the same laptop, **not with a real phone**. Use it only on a network you trust: the test accounts and the upload endpoint are then open to every device on it. Decrypting an attachment does not work through that address, because browsers offer the needed API only on `https` or `localhost`, so the page asks you to decrypt on the laptop itself; the fingerprint checks work on both.
+* **More oracle.** `SIM_SAMPLE_SECONDS=5 npm run oracle` watches every active lot and anchors one sensor log per lot a minute until Ctrl+C. `--scenario spike` records one out-of-range reading without reporting an excursion, because the rule needs three in a row.
+* Nothing needs to be undone after step 13: the next start creates a new chain and new files.
 
 ## The problem
 
 A drug lot moves from a **manufacturer** through **distributors** to a **pharmacy**, and each one keeps its own records. Nobody, least of all the patient, can verify a lot's custody, temperature history or certification. So counterfeits enter at hand-offs, temperature excursions go hidden, and recalls stall. About 1 in 10 medical products in low- and middle-income countries is substandard or falsified [1]. The FDA keeps extending U.S. electronic drug-tracing deadlines because sharing data between many parties is hard [2].
 
-**Why a blockchain:**
-- Rival firms share one record that none of them controls.
-- Signed, hash-linked transactions make the history tamper-evident.
-- Anyone can audit it.
-- A smart contract enforces one set of rules.
-
-We use a **public** chain so patients can verify lots without joining a consortium (unlike permissioned Hyperledger Fabric, which we only compare against in our analysis).
+**Why a blockchain:** rival firms share one record that none of them controls; signed, hash-linked transactions make the history tamper-evident; anyone can audit it; a smart contract enforces one set of rules. The design targets a **public** chain so patients can verify lots without joining a consortium (unlike permissioned Hyperledger Fabric, which the report only compares against).
 
 ## How it works
 
 ```mermaid
 flowchart LR
     subgraph S["Stakeholders"]
-        ORG["Organizations<br/>Manufacturer · Distributor/3PL<br/>Pharmacy · Regulator<br/>(one MetaMask wallet each)"]
-        PAT["Patient<br/>(no wallet)"]
+        ORG["Organizations<br/>Manufacturer · Distributor/3PL<br/>Pharmacy · Regulator<br/>(one account each)"]
+        PAT["Patient<br/>(no wallet, no sign-in)"]
     end
-    subgraph OFF["Off-chain"]
-        DAPP["Role-based web dApp<br/>React + ethers.js · QR per lot"]
-        ORA["IoT oracle script<br/>Node.js · simulated temps<br/>signs with ORACLE key"]
-        IPFS[("IPFS pinning service<br/>certificates · metadata · sensor logs")]
-        VER["Patient verify page<br/>custody · certificate · temp log"]
+    subgraph OFF["Off-chain (one laptop in the demo)"]
+        DAPP["Role dashboards<br/>React + ethers.js · QR per lot"]
+        VER["Patient verify page<br/>custody · certificate · temperature"]
+        ORA["IoT oracle script<br/>Node.js · simulated temperatures<br/>signs with the ORACLE account"]
+        SVC["Upload + gateway file service<br/>POST /upload · GET /ipfs/CID"]
+        STORE[("Content-addressed store<br/>local folder, IPFS CIDs<br/>(Kubo or Pinata optional)")]
     end
-    subgraph ON["On-chain · Polygon Amoy"]
+    subgraph ON["On-chain · local Hardhat chain (Polygon Amoy optional)"]
         REG["ProvenanceRegistry.sol<br/>AccessControl roles · one record per lot<br/>one event per write · status state machine"]
     end
     ORG --> DAPP
     PAT --> VER
-    DAPP -- "signed txs" --> REG
-    DAPP -- "certs, metadata" --> IPFS
-    ORA -- "log CID + excursions" --> REG
-    ORA -- "sensor logs" --> IPFS
-    VER -- "fetch + hash check" --> IPFS
+    DAPP -- "signed transactions" --> REG
+    DAPP -- "metadata, certificates, attachments" --> SVC
+    SVC --> STORE
+    ORA -- "sensor logs" --> STORE
+    ORA -- "log CID + hash, excursions" --> REG
+    VER -- "fetch file, compare hash" --> SVC
     VER -- "read-only RPC" --> REG
 ```
 
-Fig. 1 links off-chain files on-chain by content hash (CID), so later edits are detectable. A CID is not a plain hash of the file's bytes, so the contract stores the CID **and** a keccak256 hash of those bytes (*proposed, O1*).
+Off-chain files are linked on-chain by content, so a later edit is detectable. A CID is not a plain hash of a file's bytes, so the contract stores the CID (to find the file) **and** `keccak256` of the bytes (to check it). The file service sits between the web app and storage so that a storage credential never reaches the browser. By default it needs none: files go to a local folder and are named by the CID that IPFS gives a single-block file (up to 256 KiB; [`oracle/README.md`](oracle/README.md) records the comparison with a real IPFS node).
 
 | # | Data flow | On-chain call(s) |
 |---|---|---|
-| 1 | **Register:** the manufacturer uploads lot metadata to IPFS (it references the certificate of analysis, *proposed C6*) and registers the lot | `registerBatch` |
-| 2 | **Hand off:** each transfer is a signed initiate/accept pair naming the new custodian | `initiateTransfer` → `acceptTransfer` (`cancelTransfer` to undo, *proposed C3*) |
-| 3 | **Monitor:** the oracle anchors sensor-log files; an excursion flags the lot **Compromised** | `anchorSensorLog`, `reportExcursion` |
-| 4 | **Oversee:** the regulator onboards organizations and can certify or recall a lot at any stage | `grantRole` / `revokeRole`, `issueCertificate`, `recallBatch` |
-| 5 | **Verify:** the patient scans the QR code; the page reads the lot and its event history over RPC and checks IPFS files against their on-chain hashes | `verifyBatch` + event logs |
+| 1 | **Register:** the manufacturer's browser builds the lot-metadata file, encrypts a confidential attachment, uploads both and registers the lot with the returned CID and hash | `registerBatch` |
+| 2 | **Hand off:** each transfer is a signed initiate/accept pair naming the new custodian; the sender can cancel until it is accepted | `initiateTransfer` → `acceptTransfer` (`cancelTransfer`) |
+| 3 | **Monitor:** the oracle stores a sensor-log file and anchors it; three consecutive out-of-range readings are reported and flag the lot **Compromised** | `anchorSensorLog`, `reportExcursion` |
+| 4 | **Oversee:** the regulator onboards organizations and can certify or recall a lot | `grantRole` / `revokeRole`, `issueCertificate`, `recallBatch` |
+| 5 | **Verify:** the patient scans the QR code; the page reads the lot and its events over read-only RPC and checks every file against its on-chain hash | `verifyBatch` + event logs |
 
 ### Actors and roles (proposal Table I)
 
-| Actor | Contract role | Main functions | Journey stage |
+| Actor | Contract role | Main functions | In the demo |
 |---|---|---|---|
-| Manufacturer | `MANUFACTURER_ROLE` | `registerBatch`, `initiateTransfer` | Creation |
-| Distributor / 3PL | `DISTRIBUTOR_ROLE` | `acceptTransfer`, `updateStatus`, `initiateTransfer` | Shipment, Storage |
-| Pharmacy | `RETAILER_ROLE` | `verifyBatch`, `acceptTransfer`, `markDelivered` | Storage, Delivery |
-| Regulator | `REGULATOR_ROLE` (admin) | `grantRole`, `issueCertificate`, `recallBatch` | All (audit) |
-| IoT oracle | `ORACLE_ROLE` | `anchorSensorLog`, `reportExcursion` | Shipment, Storage |
-| Patient | none (no wallet) | read-only `verifyBatch` via QR code | After delivery |
+| Manufacturer | `MANUFACTURER_ROLE` | `registerBatch`, `initiateTransfer` | dashboard, account #1 |
+| Distributor / 3PL | `DISTRIBUTOR_ROLE` | `acceptTransfer`, `updateStatus`, `initiateTransfer` | dashboard, accounts #2 and #6 |
+| Pharmacy | `RETAILER_ROLE` | `verifyBatch`, `acceptTransfer`, `markDelivered` | dashboard, account #3 |
+| Regulator | `REGULATOR_ROLE` (admin) | `grantRole`, `issueCertificate`, `recallBatch` | dashboard, account #0 |
+| IoT oracle | `ORACLE_ROLE` | `anchorSensorLog`, `reportExcursion` | `npm run oracle`, account #4 |
+| Patient | none (no wallet) | read-only `verifyBatch` via QR code | verify page |
 
 ### Lot lifecycle
 
@@ -110,289 +174,179 @@ stateDiagram-v2
 
 Not shown in the diagram:
 
-* An active lot (**Created, InTransit or Stored**) becomes **Compromised** when the oracle reports an out-of-range reading.
-* The regulator can **Recall** a lot in any status except Recalled (*proposed, C2, needs a vote*: Fig. 1 shows recall from active lots only, while data flow 4 says "at any stage").
-* Delivered, Compromised and Recalled are terminal for custody.
+* An active lot (**Created, InTransit or Stored**) becomes **Compromised** when the oracle reports a reading outside the range registered for the lot. The contract checks the reading against that range.
+* The regulator can **recall** a lot in any status except Recalled. Delivered, Compromised and Recalled are terminal for custody, and Recalled is final.
+* `cancelTransfer` returns a lot to the status it had before the hand-off; `updateStatus` lets a distributor switch its own lot between InTransit and Stored.
+* A role is not enough for a custody action: the caller must also be the lot's custodian, or the named recipient for `acceptTransfer`. A manufacturer hands off to a distributor; a distributor to a distributor or a pharmacy.
+* Entering Compromised or Recalled closes an open hand-off, so a flagged lot cannot change hands.
 
-The full transition table is in [`contracts/README.md`](contracts/README.md#function--transition--event-c1).
+The full transition table, the 17 custom errors and the invariants I1 to I5 are in [`contracts/README.md`](contracts/README.md#function--transition--event-c1).
 
-## Contract components
+## Where each promised feature lives
 
-**[`contracts/interfaces/IProvenanceRegistry.sol`](contracts/interfaces/IProvenanceRegistry.sol)** is the cross-team API. The dApp, the oracle and the tests all code against it.
+| Proposal item | Code | Show it with |
+|---|---|---|
+| One `ProvenanceRegistry` contract (Solidity 0.8.x, OpenZeppelin `AccessControl`, Hardhat); one record per lot, unique IDs | [`contracts/ProvenanceRegistry.sol`](contracts/ProvenanceRegistry.sol) = [`base/RegistryBase.sol`](contracts/base/RegistryBase.sol) + three modules; API in [`interfaces/IProvenanceRegistry.sol`](contracts/interfaces/IProvenanceRegistry.sol) | `npm run compile`, `npm test` |
+| Manufacturer: `registerBatch`, `initiateTransfer` | [`contracts/modules/CustodyModule.sol`](contracts/modules/CustodyModule.sol); `frontend/src/components/dashboard/RegisterLotForm.jsx`, `LotRow.jsx` | walkthrough steps 5 to 7 |
+| Distributor: `acceptTransfer`, `updateStatus`, `initiateTransfer` | `CustodyModule.sol`; `frontend/src/components/dashboard/LotRow.jsx` | step 8 |
+| Pharmacy: `verifyBatch`, `acceptTransfer`, `markDelivered` | `RegistryBase.sol` (views), `CustodyModule.sol`; `CustodyPanels.jsx`, `LotRow.jsx` | step 9 |
+| Regulator: grant roles, `issueCertificate`, `recallBatch` | role hierarchy in the constructor of `RegistryBase.sol`; [`CertificationModule.sol`](contracts/modules/CertificationModule.sol); `RegulatorPanel.jsx` | steps 4, 10, 12 |
+| IoT oracle: `anchorSensorLog`, `reportExcursion` | [`ConditionModule.sol`](contracts/modules/ConditionModule.sol); `oracle/src/oracle/` | step 11 |
+| An event per write: the eight of Fig. 1, plus `TransferCancelled` | `IProvenanceRegistry.sol` | `npm run demo` (history from events); `test/integration/event-history.test.js` |
+| Role-based access control; invalid or unauthorized calls revert | `onlyRole` / `onlyEitherRole` and the guards in `RegistryBase.sol`; 17 custom errors | step 6; the `BLOCKED` lines of `npm run demo`; `test/unit/AccessControl.test.js` |
+| Status state machine | the three modules; invariants I1 to I5 in `RegistryBase.sol` | `test/unit/StateMachine.test.js`, `test/solidity/RandomWalk.t.sol` |
+| IPFS for certificates, metadata and sensor logs | `oracle/src/ipfs/`, `oracle/src/service/`: by default a local folder of files named by their IPFS CIDs, with no IPFS node (Kubo or Pinata optional); formats in [`docs/schemas/`](docs/schemas/README.md) | steps 5, 10, 11 |
+| Verify page checks files against on-chain hashes | `frontend/src/chain/files.js`, `frontend/src/lib/lotDocuments.js`, `verdict.js` | steps 2 and 13 |
+| Encrypting confidential documents before upload | `oracle/src/crypto/envelope.js` (AES-256-GCM), run in the browser by the register form | steps 3 and 5 |
+| Simulated sensors; oracle script signing with the ORACLE account | `oracle/src/simulator/`, `oracle/src/oracle/` | step 11; `npm run oracle` |
+| Role dashboards (React + ethers.js) | `frontend/src/pages/DashboardPage.jsx`, `frontend/src/components/dashboard/` | steps 4 to 12 |
+| QR code per lot | `frontend/src/components/QrCode.jsx`, `frontend/src/lib/verifyLink.js` | steps 2 and 5 |
+| Patient verify page: custody, certificate, temperature log | `frontend/src/pages/VerifyPage.jsx`, `frontend/src/components/verify/` | step 2 |
+| Tests | `test/`, `oracle/test/`, `frontend/src/lib/*.test.js` | [Testing](#testing) |
+| Measured gas data for the analysis | `scripts/gas-report.js` → [`docs/analysis/data/gas-report.md`](docs/analysis/data/gas-report.md) | `npm run gas:report` |
+| Contingency: demo on a local Hardhat network | `scripts/stack.js` | `npm start -- --seed` |
 
-| Component | Contents |
-|---|---|
-| `enum Status` | `Created`, `InTransit`, `Stored`, `Delivered`, `Compromised`, `Recalled` |
-| `struct DocumentRef` | `{ string cid; bytes32 contentHash; }`: an IPFS pointer plus keccak256 of the file's bytes (*proposed, O1*) |
-| `struct Batch` | id, productHash, manufacturer, manufactureDate, registeredAt, custodian, pendingCustodian, status, min/max temperature (tenths of °C), sensorLogCount, metadata, certificate, latestSensorLog |
-| Events (one per write) | `BatchRegistered`, `TransferInitiated`, `CustodyTransferred`, `StatusUpdated`, `CertificateIssued`, `SensorLogAnchored`, `ExcursionReported`, `BatchRecalled`, plus the proposed `TransferCancelled` |
-| Custom errors | `BatchNotFound`, `NotCustodian`, `NotPendingCustodian`, `InvalidStatus`, `DuplicateProduct`, `ReadingWithinRange`, … |
+**Not in this repository, or not done:**
 
-```solidity
-// Manufacturer
-function registerBatch(bytes32 productHash, uint64 manufactureDate, int16 minTempTenthsC,
-                       int16 maxTempTenthsC, DocumentRef calldata metadata) external returns (uint256 batchId);
-// Custody hand-off
-function initiateTransfer(uint256 batchId, address to) external;
-function acceptTransfer(uint256 batchId) external;
-function cancelTransfer(uint256 batchId) external;                       // proposed addition (C3)
-function updateStatus(uint256 batchId, Status newStatus) external;       // InTransit <-> Stored
-function markDelivered(uint256 batchId) external;
-// Regulator (+ inherited grantRole / revokeRole)
-function issueCertificate(uint256 batchId, DocumentRef calldata certificate) external;
-function recallBatch(uint256 batchId, string calldata reason) external;
-// IoT oracle
-function anchorSensorLog(uint256 batchId, DocumentRef calldata sensorLog) external;
-function reportExcursion(uint256 batchId, int16 readingTenthsC, uint64 observedAt,
-                         DocumentRef calldata sensorLog) external;
-// Read-only (anyone)
-function verifyBatch(uint256 batchId) external view returns (Batch memory);
-function totalBatches() external view returns (uint256);
-function batchIdOf(bytes32 productHash) external view returns (uint256);
-```
-
-**[`contracts/ProvenanceRegistry.sol`](contracts/ProvenanceRegistry.sol)** is the implementation on OpenZeppelin `AccessControl`.
-
-| Part | Status |
-|---|---|
-| Role constants and the constructor (the regulator is admin of the organization roles) | ✅ done |
-| Storage layout (lot records, duplicate check, state saved for cancelling a hand-off) | ✅ done |
-| Access control on every write (`onlyRole`, `onlyEitherRole`) | ✅ done, tested |
-| Read-only views (`verifyBatch`, `totalBatches`, `batchIdOf`) | ✅ done, tested |
-| Custody journey: `registerBatch`, `initiateTransfer`, `acceptTransfer`, `markDelivered` | ✅ done, run end to end by `scripts/demo.js` (unit tests pending) |
-| `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog`, `reportExcursion` | 📝 in progress: numbered `TODO` steps, revert `NotImplemented()` (due 11/25) |
-
-The proposal leaves some details open: which function causes each transition, how hand-offs work, field types, and how IPFS files are verified. The contract fills each gap with a **proposed** answer, tagged in code as `PROPOSED (C1)` etc. and listed in [`docs/design-decisions.md`](docs/design-decisions.md) for the team to confirm.
+* **No Polygon Amoy deployment yet.** The Amoy scripts were run only against a local stand-in for Amoy, never on the real network (see [Polygon Amoy](#polygon-amoy-optional)). The web app, the oracle program and file storage were not run against Amoy at all.
+* **Not verified:** signing in with MetaMask (the button exists; every check used the local test accounts), and the verify page on a real phone.
+* **No public hosting** of the verify page, and no public IPFS pinning: the Pinata back end has never been run against the live service, and Kubo is optional.
+* **No browser test suite.** The screens were checked by hand and with a scripted headless browser; the logic behind them has unit tests.
+* **Stretch goals not built:** package-level serial numbers and ERC-721 lot tokens. Real sensors were out of scope from the start.
+* **The written analysis** (gas cost, scalability, privacy, regulation, centralized comparison) is in the report, which is submitted separately. This repository supplies the measured gas data.
 
 ## Repository layout
 
 ```text
-cse540-pharma-provenance/
-├── contracts/
-│   ├── interfaces/IProvenanceRegistry.sol   cross-team API: types, events, errors, signatures (NatSpec)
-│   ├── ProvenanceRegistry.sol               implementation (custody journey done; 6 write functions still TODO)
-│   └── README.md                            roles, data model, transition table, events, how to implement
-├── test/
-│   └── ProvenanceRegistry.test.js           mocha + chai + ethers: 30 passing, 15 pending
-├── scripts/
-│   ├── deploy.js                            deploys and writes deployments/<network>.json
-│   ├── grant-roles.js                       regulator onboards the four organization roles
-│   └── demo.js                              runs one lot manufacturer -> distributor -> pharmacy and prints its history
-├── deployments/                             address + ABI + deployBlock per network (hand-off to frontend/oracle)
-├── frontend/                                [planned] React + ethers.js role dashboards and patient verify page
-├── oracle/                                  [planned] sensor simulator, oracle script, IPFS helpers
-├── docs/
-│   ├── README.md                            docs index and analysis plan
-│   ├── design-decisions.md                  open design questions C1–C7, O1–O6, D1–D6
-│   └── meetings/TEMPLATE.md                 Sunday sync notes template
-├── .github/
-│   ├── workflows/ci.yml                     compile + test on pushes to main and on every PR
-│   └── pull_request_template.md             review + public-repo safety checklist
-├── hardhat.config.js                        Solidity 0.8.34 (EVM: cancun); networks: in-process, localhost, amoy
-├── package.json, package-lock.json          Hardhat 3, OpenZeppelin Contracts 5, mocha/chai/ethers
-├── .env.example                             Amoy + role-setup variables (copy to .env)
-└── .gitignore
+contracts/
+  interfaces/IProvenanceRegistry.sol   the API: types, events, custom errors, every function with NatSpec
+  base/RegistryBase.sol                roles, storage and its invariants, shared guards, read-only views
+  modules/CustodyModule.sol            registerBatch, initiateTransfer, acceptTransfer, cancelTransfer, updateStatus, markDelivered
+  modules/ConditionModule.sol          anchorSensorLog, reportExcursion
+  modules/CertificationModule.sol      issueCertificate, recallBatch
+  ProvenanceRegistry.sol               the one deployed contract: composes the three modules
+  README.md                            roles, data model, transition table, errors, invariants, trust assumptions
+test/
+  unit/                                one function or rule at a time; role x function and status x function matrices
+  integration/                         whole journeys: data flows 1 to 5, exceptions, history rebuilt from events
+  solidity/                            fuzz and invariant tests run by Hardhat's Solidity test runner
+  tooling/                             committed ABI and gas report match the code; CID helper
+  helpers/                             fixtures and assertions shared by the Mocha tests
+scripts/
+  stack.js                             npm start: chain, deploy, roles, file service, optional demo lots, web app
+  demo.js                              terminal walkthrough of the whole contract (local, or single-wallet on Amoy)
+  deploy.js, grant-roles.js            deploy and write deployments/<network>.json; onboard organizations
+  gas-report.js, export-abi.js         gas tables for the analysis; ABI export after every compile
+  test-subset.js, lib/                 runs one test folder; helpers (seed lots, demo documents, fees, derived wallets)
+oracle/                                own npm package: storage, file service, encryption, documents, simulator, IoT oracle
+frontend/                              own npm package: React app with the dashboards and the patient verify page
+deployments/                           abi/ProvenanceRegistry.json (committed); <network>.json per deployment (localhost.json is not committed)
+docs/
+  design-decisions.md                  what the proposal left open and what the code does about it
+  schemas/                             JSON Schemas and synthetic examples of the three off-chain documents
+  testing/README.md                    the test plan as implemented
+  analysis/data/                       gas-report.json and gas-report.md, generated
+  README.md, meetings/TEMPLATE.md      docs index; template for meeting notes
+.github/                               CI workflow (contracts, oracle, frontend) and the pull-request template
+hardhat.config.js                      Solidity 0.8.34, EVM target cancun, optimizer on; networks: in-process, localhost, amoy
+package.json, package-lock.json        Hardhat 3, OpenZeppelin Contracts 5, mocha, chai, ethers 6
+LICENSE                                MIT
+.env.example, .gitignore               template for the optional Amoy variables (Configuration below is the reference list); nothing here needs a .env file
 ```
 
-`frontend/` and `oracle/` will each have their own `package.json`; the root project holds only the contracts. `frontend/` and `oracle/` each have a README with planned contents, config variables and a task checklist. `contracts/`, `deployments/` and `docs/` have reference READMEs.
+## Commands
 
-## Setup
-
-**Prerequisites**
-
-| Tool | Version | Needed for |
-|---|---|---|
-| [Node.js](https://nodejs.org/) | **22.13 or newer** (tested with 22.18; Hardhat 3 exits on older 22.x) | everything |
-| npm | 10+ (ships with Node 22) | everything |
-| Git | any recent version | cloning |
-| [MetaMask](https://metamask.io/) | latest | interacting with the dApp (later), Amoy deploys |
-| Testnet POL | from the [Polygon faucet](https://faucet.polygon.technology/) | Amoy deploys only |
-
-**Install**
-
-```bash
-git clone https://github.com/Srijan2601/cse540-pharma-provenance.git
-cd cse540-pharma-provenance
-npm ci                 # installs the exact versions from package-lock.json
-```
-
-The first compile downloads the Solidity compiler (0.8.34) automatically. You don't need a `.env` file to compile, test or use the local network.
-
-**Dependencies** (from `package.json`)
-
-| Package | Why |
-|---|---|
-| `hardhat` ^3.21 | compile, test, local chain, deploy scripts |
-| `@nomicfoundation/hardhat-toolbox-mocha-ethers` ^4 | ethers v6 integration, chai matchers, network helpers, keystore, verify |
-| `@openzeppelin/contracts` ^5.6 | audited `AccessControl` |
-| `mocha`, `chai`, `ethers` | test runner, assertions, contract calls |
-| `dotenv` | loads `.env` into `hardhat.config.js` |
-
-## Usage: compile, test, deploy
+All of these run in the repository root.
 
 | Command | What it does |
 |---|---|
-| `npx hardhat run scripts/deploy.js` | Deploy to a throwaway in-process chain: no node, no `.env`, nothing saved. The quickest check that deployment works. |
-| `npm run compile` | Compile the contracts (should report no warnings). |
-| `npm test` | Run the unit tests on an in-process chain. |
-| `npm run test:gas` | Run the tests and print a per-function gas table. |
-| `npm run node` | Start a local JSON-RPC chain at `http://127.0.0.1:8545` (chainId 31337) with 20 funded test accounts. |
-| `npm run deploy:local` | Deploy to that local chain and write `deployments/localhost.json`. |
-| `npm run roles:local` | Onboard demo organizations on the local chain. |
-| `npx hardhat run scripts/demo.js` | Run the custody-journey demo on a throwaway in-process chain (deploys and onboards roles itself). |
-| `npx hardhat run scripts/demo.js --network localhost` | Run the same demo against the local chain set up by `deploy:local` and `roles:local`. Prefix `PAUSE=1` to pause between steps. |
-| `npm run deploy:amoy` | Deploy to Polygon Amoy and write `deployments/amoy.json`. |
-| `npm run roles:amoy` | Onboard organizations on Amoy (addresses from `.env`). |
-| `npm run clean` | Delete build outputs (`artifacts/`, `cache/`). |
+| `npm run setup` | Installs the root, `oracle/` and `frontend/` packages from their lockfiles and compiles the contracts. Run once. |
+| `npm start` | Starts the local chain (port 8545), deploys the registry, grants roles to test accounts #1 to #4, starts the file service (8787) and the web app (5173), and prints a summary. Ctrl+C stops everything. |
+| `npm start -- --seed` | The same, plus five demo lots with real documents and account #6 as a second distributor. Add `--lan` to make it reachable from the local network. |
+| `npm run oracle:once -- --lot <id>` | The oracle anchors one sensor log for one lot now. `--scenario normal` (default), `excursion`, `freeze` or `spike`. Needs `npm start` running. |
+| `npm run oracle` | The oracle watches every active lot until Ctrl+C. `SIM_SAMPLE_SECONDS=5` gives one log per lot a minute instead of one every 12 minutes. |
+| `npm run demo` | The terminal walkthrough of the whole contract on a throwaway in-process chain. |
+| `npm run demo:local` | The same walkthrough against the chain started by `npm start`. It can be repeated: every run registers two new lots. |
+| `npm test` | All contract tests. Subsets: `npm run test:unit`, `test:integration`, `test:solidity`, `test:tooling`. |
+| `npm run coverage` | The tests with line and statement coverage of `contracts/`. |
+| `npm run test:gas` | The Mocha tests with Hardhat's table of gas per function. |
+| `npm run gas:report` | Measures every transaction and whole lot lifecycles, and writes `docs/analysis/data/gas-report.json` and `.md`. |
+| `npm run compile` | Compiles the contracts and exports the ABI to `deployments/abi/` (`npm run abi:export` does the export alone). |
+| `npm run clean` | Deletes Hardhat's build output (`artifacts/`, `types/`, the compile cache in `cache/`) and `coverage/`; `deployments/` and the oracle's file store are kept. `npm run compile` rebuilds the build output. |
+| `npm run node`, `npm run deploy:local`, `npm run roles:local` | The first three steps of `npm start`, by hand: a local chain, a deployment written to `deployments/localhost.json`, and the roles for accounts #1 to #4. `npm run node` prints the private keys of the test accounts. They are publicly known: never use them on a real network. |
+| `npm run deploy:amoy`, `demo:amoy`, `roles:amoy`, `verify:amoy` | Polygon Amoy only; see [below](#polygon-amoy-optional). |
 
-### Local network (development and demo fallback)
+The two sub-packages have their own commands: [`oracle/README.md`](oracle/README.md) (file service, storage and document tools, simulator, oracle options) and [`frontend/README.md`](frontend/README.md) (development server, build, settings).
 
-The contingency plan says that if Amoy or IPFS is down, we demo on a local Hardhat network.
+## Testing
 
-```bash
-# terminal 1
-npm run node
+Counts from runs on 2026-11-25. Every test passed.
 
-# terminal 2
-npm run deploy:local     # regulator = account #0
-npm run roles:local      # MANUFACTURER=#1, DISTRIBUTOR=#2, RETAILER=#3, ORACLE=#4 (Hardhat test accounts)
-PAUSE=1 npx hardhat run scripts/demo.js --network localhost   # custody-journey demo, Enter between steps
-```
+| Suite | Command | Result |
+|---|---|---|
+| Contract | `npm test` | 495 passing: 490 Mocha (462 unit, 17 integration, 11 tooling) and 5 Solidity fuzz tests |
+| Contract coverage | `npm run coverage` | 100% of lines and statements in the four contract files that contain code. The tool does not measure branches, and a coverage run skips the two gas-report checks. |
+| Oracle | `cd oracle && npm test` | 523 passing |
+| Oracle against the real contract | `cd oracle && npm run test:e2e` | 3 passing in about 13 seconds; starts its own Hardhat node on a free port |
+| Web app | `cd frontend && npm test` | 190 passing in 11 files |
 
-After restarting `npm run node`, run `deploy:local` and `roles:local` again: the local chain starts empty.
+The contract tests check every function's success path with its event and every revert with its custom error, a role × function matrix, a status × function matrix, the invariants I1 to I5 after every call of a seeded 500-call random walk (Mocha) and after every step of 64 random walks of 150 steps (Solidity), and whole journeys across roles. The oracle and web-app tests cover their logic without a chain or a browser; the screens themselves have no automated test. The plan, layer by layer, is in [`docs/testing/README.md`](docs/testing/README.md).
 
-On the local network, the scripts always use these test accounts and ignore any Amoy addresses in `.env`, so the fallback demo works even after `.env` is filled in.
+## Polygon Amoy (optional)
 
-<details>
-<summary>Connect MetaMask to the local chain</summary>
+The demo above needs none of this. This section is for showing the same contract on a public testnet from **one** free testnet wallet.
 
-1. Add a network: RPC URL `http://127.0.0.1:8545`, chain ID `31337`, currency `ETH`.
-2. Import accounts #0–#4 using the private keys printed by `npm run node`.
-3. These keys are **publicly known**. Never send real funds to them or use them on a real network.
-4. After restarting `npm run node`, clear MetaMask's activity for these accounts (*Settings → Advanced → Clear activity tab data*) so nonces reset.
+**What was and was not run.** On 2026-11-25, steps 2 to 4 below and `npm run roles:amoy` were run against a local Hardhat node that was given Amoy's chain id (80002) and one-second blocks, with a throwaway key in a separate keystore. They have **never been run on the real network**: no wallet has been funded yet. `npm run verify:amoy` was not run at all.
 
-</details>
-
-### Polygon Amoy testnet
-
-1. Create a **testnet-only** MetaMask wallet for deploying, and get POL from the [faucet](https://faucet.polygon.technology/).
-2. `cp .env.example .env` and set `AMOY_RPC_URL`. Set the deployer key in **one** of two ways:
-   - **Recommended:** Hardhat's encrypted keystore, so the key is never stored in plain text:
-     ```bash
-     npx hardhat keystore set DEPLOYER_PRIVATE_KEY
-     ```
-     Leave `DEPLOYER_PRIVATE_KEY` commented out in `.env` and unset in your shell. Any value there, even an empty one, overrides the keystore.
-   - Or uncomment `DEPLOYER_PRIVATE_KEY` in `.env` and set it there (`.env` is gitignored).
-3. Deploy, then onboard organizations. Set `MANUFACTURER_ADDRESS` etc. in `.env` first. `roles:amoy` sends from the `DEPLOYER_PRIVATE_KEY` account, which must hold REGULATOR_ROLE, so either leave `REGULATOR_ADDRESS` empty or run `roles:amoy` with the regulator's key.
+1. Create a new wallet used for nothing else and get test POL for it from an Amoy faucet. Test POL is free. Faucets that ask for a balance on a real network can be skipped; no faucet has been used for this project yet, so none is recommended here.
+2. Store the endpoint and the key in Hardhat's encrypted keystore, a password-protected file in your user profile, outside the repository. The first command asks you to choose a password; every later Amoy command asks for it.
    ```bash
-   npm run deploy:amoy      # prints https://amoy.polygonscan.com/address/<address>
-   npm run roles:amoy
+   npx hardhat keystore set AMOY_RPC_URL           # paste https://polygon-amoy-bor-rpc.publicnode.com
+   npx hardhat keystore set DEPLOYER_PRIVATE_KEY   # paste the wallet's private key (input is hidden)
    ```
-4. Commit `deployments/amoy.json` and update the [Deployments](#deployments) table.
+3. `npm run deploy:amoy` prints the transaction hash and the registry's address as soon as the transaction is sent, then writes `deployments/amoy.json`.
+4. `npm run demo:amoy` runs the walkthrough of `npm run demo` in single-wallet mode. Your wallet is the regulator; the other actors are throwaway wallets derived from it, topped up automatically. Refused calls are simulated and cost nothing. Every transaction prints its `amoy.polygonscan.com` link. Step 0 prints the cost and stops, before anything is sent, if the balance is too low.
+5. Commit `deployments/amoy.json` and fill in the table below.
 
-Amoy network details: chain ID `80002` · currency `POL` · RPC `https://rpc-amoy.polygon.technology` · explorer [amoy.polygonscan.com](https://amoy.polygonscan.com).
+**Cost.** Gas does not depend on the network: the deployment is 1,991,684 gas, and on the stand-in a first demo run used 1,920,885 gas in 29 transactions and a second run 1,625,365 gas in 23. The price does. At 54 gwei per gas, which the endpoint suggested between 10:31 and 10:45 UTC on 2026-11-25, the deployment costs about 0.11 POL, and the first run will not start with less than about 0.15 POL in the wallet (it spends about 0.10). That is about 0.25 POL for the deployment and one run, and about 0.34 POL for the deployment and two runs. Earlier the same day the suggested price was 41 gwei, which gives 0.08, 0.11, 0.19 and 0.26 POL. With 0.5 POL in the wallet there is room for either.
 
-> **Current limitation:** a deployed registry supports onboarding, the custody journey (`registerBatch`, `initiateTransfer`, `acceptTransfer`, `markDelivered`) and read-only calls. `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog` and `reportExcursion` still revert with `NotImplemented()`.
+**Endpoint.** Use `https://polygon-amoy-bor-rpc.publicnode.com` (no key needed). In a test on 2026-11-25 it answered 40 of 40 requests and accepted event queries of up to 10,000 blocks. `polygon-amoy.drpc.org` answered 31 of 40 and refused every event query over 100 blocks, and the scripts do not retry a failed request. `rpc-amoy.polygon.technology`, which the midterm README named, has been shut down: on 2026-11-25 its name no longer resolved.
 
-## Configuration
-
-Copy [`.env.example`](.env.example) to `.env`. It is only needed for Amoy. On the local network, the scripts ignore the address variables below.
-
-| Variable | Secret? | Used by | Purpose |
-|---|---|---|---|
-| `AMOY_RPC_URL` | if it contains an API key | `hardhat.config.js` | Amoy JSON-RPC endpoint |
-| `DEPLOYER_PRIVATE_KEY` | **yes** (prefer the keystore) | `hardhat.config.js` | testnet deployer wallet |
-| `REGULATOR_ADDRESS` | no | `scripts/deploy.js` | gets REGULATOR + admin role (default: deployer). If set, `roles:amoy` needs that wallet's key. |
-| `MANUFACTURER_ADDRESS`, `DISTRIBUTOR_ADDRESS`, `RETAILER_ADDRESS`, `ORACLE_ADDRESS` | no | `scripts/grant-roles.js` | organization wallets to onboard |
-| `REGISTRY_ADDRESS` | no | `scripts/grant-roles.js` | overrides `deployments/<network>.json` |
-
-`frontend/` and `oracle/` will have their own `.env.example` files. Their planned variables are listed in their READMEs.
-
-## Deployments
+### Deployments
 
 | Network | Address | Deploy block | Date |
 |---|---|---|---|
-| Polygon Amoy (80002) | *not deployed yet (target 11/08–11/10)* | – | – |
+| Polygon Amoy (80002) | *not deployed yet* | – | – |
 
-Machine-readable records (address, deploy block, ABI) are in [`deployments/`](deployments/).
+Once deployed, the address goes in this table and in `deployments/amoy.json`, which the web app and the oracle read (see [`deployments/README.md`](deployments/README.md), which also explains source verification with `npm run verify:amoy` and a free Etherscan API key).
 
-## Roadmap and tasks
+The older multi-wallet path still exists: `npm run deploy:amoy`, then `npm run roles:amoy` with the organizations' own wallet addresses in `MANUFACTURER_ADDRESS`, `DISTRIBUTOR_ADDRESS`, `RETAILER_ADDRESS` and `ORACLE_ADDRESS`.
 
-Milestones are from the proposal §6 and Team Contract §5. The internal freeze, integration and submit dates are **proposed** in [D3](docs/design-decisions.md#delivery-and-process-d).
-Day-to-day tasks live on the GitHub Projects board. This list is the overview.
+## Configuration
 
-### ✅ 11/01: Smart Contract Draft
-- [x] Repository structure and tooling (Hardhat 3, OpenZeppelin 5, CI, PR template)
-- [x] `IProvenanceRegistry`: enum, structs, the 8 events from Fig. 1 (+1 proposed), errors, every Table I signature with NatSpec
-- [x] `ProvenanceRegistry` draft: roles, storage, constructor, views, access control; write bodies as TODO steps
-- [x] Unit tests: deployment, role administration, interface completeness, access control (30 passing, 15 pending)
-- [x] Deploy and role-setup scripts, tested on a local node
-- [x] Proposal gap review recorded in `docs/design-decisions.md`
-- [ ] Team review of the proposed decisions **C1–C7** at the next Sunday sync
-- [ ] Tag the submitted commit `v0.1-contract-draft`
+**The local demo needs no configuration.** The variables below matter only for Polygon Amoy and for the cost columns of the gas report.
 
-### 11/15: Midterm progress update (Amoy prototype + 5-minute video)
-*Proposed internal dates: freeze 11/11 · integration session 11/12 · submit 11/13*
-- **Contract:**
-  - [x] Custody journey: `registerBatch`, `initiateTransfer`, `acceptTransfer`, `markDelivered`.
-  - [x] `scripts/demo.js`: runs the custody journey on a local chain for the video (blocked attempts + history from events).
-  - [ ] Remaining write functions: `cancelTransfer`, `updateStatus`, `issueCertificate`, `recallBatch`, `anchorSensorLog`, `reportExcursion`.
-  - [ ] Turn the pending tests into real tests, including revert cases. The full-journey test moves to `test/integration/` for 11/25 (D4).
-  - [ ] First Amoy deploy, `deployments/amoy.json` committed, source verified on Polygonscan.
-  - [ ] `scripts/seed-demo.js` to create demo lots on Amoy.
-- **Off-chain:**
-  - [ ] Decide O1 (hash rule), O2 (schemas) and O3 (upload path).
-  - [ ] Upload helper.
-  - [ ] Sensor simulator with normal and excursion scenarios.
-  - [ ] Oracle anchoring logs on Amoy.
-- **Frontend:**
-  - [ ] Wallet connect and role detection.
-  - [ ] Register and hand-off flows.
-  - [ ] QR code per lot.
-  - [ ] Verify page showing custody history.
-- **QA / docs:**
-  - [ ] Branch ruleset and Projects board (D2).
-  - [ ] Test plan in `docs/testing/` (D4).
-  - [ ] Demo runbook.
-  - [ ] Midterm video.
+| Variable | Read by | Purpose | Secret? |
+|---|---|---|---|
+| `AMOY_RPC_URL` | `hardhat.config.js` | Amoy JSON-RPC endpoint | only if the URL contains an API key |
+| `DEPLOYER_PRIVATE_KEY` | `hardhat.config.js` | key of the one testnet wallet that deploys and, in `demo:amoy`, is the regulator | **yes** |
+| `REGULATOR_ADDRESS` | `scripts/deploy.js` | gives the regulator role to another wallet than the deployer; leave it unset for `demo:amoy` | no |
+| `MANUFACTURER_ADDRESS`, `DISTRIBUTOR_ADDRESS`, `RETAILER_ADDRESS`, `ORACLE_ADDRESS` | `scripts/grant-roles.js` | the wallets that `npm run roles:amoy` onboards | no |
+| `REGISTRY_ADDRESS` | `scripts/grant-roles.js` | overrides the address in `deployments/amoy.json` | no |
+| `ETHERSCAN_API_KEY` | `hardhat.config.js` | only for `npm run verify:amoy` | yes |
+| `GAS_PRICE_GWEI`, `POL_USD` | `scripts/gas-report.js` | add cost columns in POL and USD to the gas report | no |
 
-### 11/25: Features complete
-- [ ] Data flows 1–5 working end to end on Amoy, including the excursion and recall paths
-- [ ] Regulator dashboard (onboard, certify, recall)
-- [ ] Verify page checks IPFS files against on-chain hashes, and flags Compromised, Recalled and uncertified lots
-- [ ] Encrypt confidential documents before upload (proposal §5; which documents, in O5)
-- [ ] Integration journey test in `test/integration/`
-- [ ] Local fallback rehearsed (Hardhat node + local IPFS with the same CIDs)
-- [ ] Gas data frozen for the analysis
+`.env.example` is only an example: a template with every variable commented out and no real values. The real `.env`, if you create one, is listed in `.gitignore` and is never pushed to GitHub. Keep the two secrets in the keystore (`npx hardhat keystore set <NAME>`), not in a file. A variable of the same name in your shell or in a `.env` file **overrides the keystore even when it is empty**: with an empty `AMOY_RPC_URL` in the shell, Hardhat stops with "Invalid URL value" and never asks the keystore. On the local chain the scripts ignore the address variables and always use the test accounts. The settings of the oracle and the web app, all optional, are listed in their READMEs.
 
-### 12/04: Final submission (demo video, repository, IEEE report)
-*Proposed internal dates: integration 12/01 · submit 12/02*
-- [ ] Analysis: gas cost, scalability, privacy, regulation, centralized comparison, trusted keys (`docs/analysis/`)
-- [ ] IEEE-format report and demo video
-- [ ] Verify page hosted publicly; README deployments table final; tag `v1.0-final`
+## Design decisions and trust assumptions
 
-### Stretch goals (dropped first if work slips)
-- [ ] Package-level serial numbers
-- [ ] ERC-721 lot tokens. Decide **before** the `Batch` struct is final, because it changes IDs and storage.
-- [ ] *(proposed addition, C2; not in the proposal)* A regulator `clearExcursion` for false alarms
-
-**Out of scope:** real IoT sensors; personal or patient data of any kind.
+The proposal fixed the architecture and left details open: which function causes which transition, how a hand-off is undone, how a file is checked against the chain, what is encrypted. [`docs/design-decisions.md`](docs/design-decisions.md) lists each question and what the code does about it, including the four the team settled by vote; the identifiers there (C1 to C7, O1 to O6) are the ones used in code comments. The system trusts two keys. The regulator's key grants every role and can recall any lot, and a recall cannot be undone. The oracle's key is trusted for sensor truth: the contract checks that a reported reading is outside the lot's range, not that it was measured. Both are discussed under "Trust assumptions" in [`contracts/README.md`](contracts/README.md#trust-assumptions) and [`oracle/README.md`](oracle/README.md).
 
 ## Contributing
 
-1. **Pick a task** on the GitHub Projects board and assign yourself.
-2. **Branch** from `main`, e.g. `feat/contract-register-batch`, `feat/frontend-verify-page`, `docs/analysis-gas`.
-3. **Test:** run `npm test` before pushing. CI runs `compile` and `test` on every PR.
-4. **Open a PR** using the template. **Every PR is reviewed by a teammate** before merging, and `main` must always pass CI (Team Contract §2).
-5. **Changing the interface** (`IProvenanceRegistry.sol`) changes the ABI the frontend and oracle use. Say so in the PR, update `contracts/README.md`, and redeploy.
-6. **Settling a design question?** Update [`docs/design-decisions.md`](docs/design-decisions.md) in the same PR.
+Branch from `main`, run the tests of the package you changed, and open a pull request with the template; a teammate reviews every pull request, and CI must pass. A change to the contracts can leave the committed ABI (`deployments/abi/`) and gas report (`docs/analysis/data/`) out of date: run `npm run compile` and `npm run gas:report` and commit the results, or `npm test` fails.
 
-**This repository is public.** Never commit:
-- private keys, seed phrases, `.env` files or API tokens;
-- ASU IDs or email addresses;
-- the proposal / team-contract PDF (it contains student IDs).
-
-Use testnet-only wallets. Keep attendance and other team-internal notes in the team's private log, not in `docs/meetings/`.
+**This repository is public.** Never commit private keys, seed phrases, API tokens, `.env` files, ASU IDs, email addresses, or the proposal / team-contract PDF. Use testnet-only wallets.
 
 ## Team
 
@@ -413,6 +367,6 @@ Roles are leads, not exclusive owners: everyone codes, writes and presents (Team
 4. T. Bocek et al., "Blockchains everywhere: A use-case of blockchains in the pharma supply-chain," *IFIP/IEEE IM*, 2017.
 5. A. Musamih et al., "A blockchain-based approach for drug traceability in healthcare supply chain," *IEEE Access*, 2021.
 
-**License:** not chosen yet (team decision). Until then, all rights are reserved, and the Solidity sources carry `SPDX-License-Identifier: UNLICENSED`. OpenZeppelin Contracts is MIT-licensed.
+**License:** [MIT](LICENSE). The Solidity sources carry `SPDX-License-Identifier: MIT`. OpenZeppelin Contracts, the one library the contract builds on, is MIT-licensed as well.
 
 Course project for CSE 540 at Arizona State University. Testnet only: not for production or medical use.

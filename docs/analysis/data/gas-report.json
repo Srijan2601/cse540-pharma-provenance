@@ -1,0 +1,493 @@
+{
+  "generatedBy": "npm run gas:report (scripts/gas-report.js)",
+  "contract": "ProvenanceRegistry",
+  "compiler": {
+    "solc": "0.8.34+commit.80d5c536",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "evmVersion": "cancun",
+    "viaIR": false
+  },
+  "toolchain": {
+    "hardhat": "3.21.2",
+    "openzeppelinContracts": "5.6.1"
+  },
+  "network": {
+    "name": "Hardhat in-process network",
+    "chainId": 31337,
+    "hardfork": "osaka"
+  },
+  "codeFingerprint": "0xd3136e4b3eb66ee1b5b8574ac7f53498fcf254aac7a276cd76e303ceba948a80",
+  "deployedBytecodeBytes": 8238,
+  "prices": null,
+  "operations": [
+    {
+      "function": "constructor",
+      "caller": "Deployer",
+      "case": "deploy the registry (once)",
+      "gas": 1991684
+    },
+    {
+      "function": "grantRole",
+      "caller": "Regulator",
+      "case": "onboard an organization",
+      "gas": 51484
+    },
+    {
+      "function": "revokeRole",
+      "caller": "Regulator",
+      "case": "offboard an organization",
+      "gas": 29565
+    },
+    {
+      "function": "registerBatch",
+      "caller": "Manufacturer",
+      "case": "first lot of the registry",
+      "gas": 275683
+    },
+    {
+      "function": "registerBatch",
+      "caller": "Manufacturer",
+      "case": "every later lot",
+      "gas": 258583
+    },
+    {
+      "function": "initiateTransfer",
+      "caller": "Manufacturer",
+      "case": "to a distributor (lot Created)",
+      "gas": 41107
+    },
+    {
+      "function": "initiateTransfer",
+      "caller": "Distributor",
+      "case": "to a pharmacy (lot Stored)",
+      "gas": 66027
+    },
+    {
+      "function": "initiateTransfer",
+      "caller": "Distributor",
+      "case": "to a pharmacy again, after a cancelled hand-off",
+      "gas": 46127
+    },
+    {
+      "function": "acceptTransfer",
+      "caller": "Distributor",
+      "case": "a distributor accepts",
+      "gas": 38665
+    },
+    {
+      "function": "acceptTransfer",
+      "caller": "Pharmacy",
+      "case": "a pharmacy accepts",
+      "gas": 40969
+    },
+    {
+      "function": "cancelTransfer",
+      "caller": "Manufacturer",
+      "case": "lot returns to Created",
+      "gas": 37952
+    },
+    {
+      "function": "cancelTransfer",
+      "caller": "Distributor",
+      "case": "lot returns to Stored",
+      "gas": 40256
+    },
+    {
+      "function": "updateStatus",
+      "caller": "Distributor",
+      "case": "Stored -> InTransit",
+      "gas": 36480
+    },
+    {
+      "function": "updateStatus",
+      "caller": "Distributor",
+      "case": "InTransit -> Stored",
+      "gas": 36472
+    },
+    {
+      "function": "markDelivered",
+      "caller": "Pharmacy",
+      "case": "Stored -> Delivered",
+      "gas": 35831
+    },
+    {
+      "function": "issueCertificate",
+      "caller": "Regulator",
+      "case": "first certificate of a lot",
+      "gas": 123052
+    },
+    {
+      "function": "issueCertificate",
+      "caller": "Regulator",
+      "case": "replacement certificate",
+      "gas": 51875
+    },
+    {
+      "function": "recallBatch",
+      "caller": "Regulator",
+      "case": "a Delivered lot",
+      "gas": 35936
+    },
+    {
+      "function": "recallBatch",
+      "caller": "Regulator",
+      "case": "a Compromised lot",
+      "gas": 35936
+    },
+    {
+      "function": "recallBatch",
+      "caller": "Regulator",
+      "case": "a Stored lot, no open hand-off",
+      "gas": 35936
+    },
+    {
+      "function": "recallBatch",
+      "caller": "Regulator",
+      "case": "a lot in transit, clears an open hand-off",
+      "gas": 35936
+    },
+    {
+      "function": "anchorSensorLog",
+      "caller": "Oracle",
+      "case": "first log of a lot",
+      "gas": 126545
+    },
+    {
+      "function": "anchorSensorLog",
+      "caller": "Oracle",
+      "case": "every later log",
+      "gas": 55356
+    },
+    {
+      "function": "reportExcursion",
+      "caller": "Oracle",
+      "case": "first log of the lot, no open hand-off",
+      "gas": 128388
+    },
+    {
+      "function": "reportExcursion",
+      "caller": "Oracle",
+      "case": "after an earlier log, no open hand-off",
+      "gas": 57284
+    },
+    {
+      "function": "reportExcursion",
+      "caller": "Oracle",
+      "case": "after an earlier log, clears an open hand-off",
+      "gas": 57248
+    }
+  ],
+  "lifecycles": [
+    {
+      "id": "happy-path",
+      "title": "Happy path, 0 sensor logs",
+      "sensorLogs": 0,
+      "transactions": 7,
+      "gas": 604234,
+      "gasByRole": {
+        "Manufacturer": 299678,
+        "Regulator": 123064,
+        "Distributor": 104692,
+        "Pharmacy": 76800,
+        "Oracle": 0
+      },
+      "steps": [
+        {
+          "function": "registerBatch",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 258583
+        },
+        {
+          "function": "issueCertificate",
+          "role": "Regulator",
+          "calls": 1,
+          "gas": 123064
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 41095
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 38665
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 66027
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 40969
+        },
+        {
+          "function": "markDelivered",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 35831
+        }
+      ]
+    },
+    {
+      "id": "happy-path",
+      "title": "Happy path, 1 sensor log",
+      "sensorLogs": 1,
+      "transactions": 8,
+      "gas": 730803,
+      "gasByRole": {
+        "Manufacturer": 299678,
+        "Regulator": 123052,
+        "Distributor": 104692,
+        "Pharmacy": 76800,
+        "Oracle": 126581
+      },
+      "steps": [
+        {
+          "function": "registerBatch",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 258583
+        },
+        {
+          "function": "issueCertificate",
+          "role": "Regulator",
+          "calls": 1,
+          "gas": 123052
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 41095
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 38665
+        },
+        {
+          "function": "anchorSensorLog",
+          "role": "Oracle",
+          "calls": 1,
+          "gas": 126581
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 66027
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 40969
+        },
+        {
+          "function": "markDelivered",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 35831
+        }
+      ]
+    },
+    {
+      "id": "happy-path",
+      "title": "Happy path, 10 sensor logs",
+      "sensorLogs": 10,
+      "transactions": 17,
+      "gas": 1229319,
+      "gasByRole": {
+        "Manufacturer": 299678,
+        "Regulator": 123064,
+        "Distributor": 104692,
+        "Pharmacy": 76800,
+        "Oracle": 625085
+      },
+      "steps": [
+        {
+          "function": "registerBatch",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 258583
+        },
+        {
+          "function": "issueCertificate",
+          "role": "Regulator",
+          "calls": 1,
+          "gas": 123064
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 41095
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 38665
+        },
+        {
+          "function": "anchorSensorLog",
+          "role": "Oracle",
+          "calls": 10,
+          "gas": 625085
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 66027
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 40969
+        },
+        {
+          "function": "markDelivered",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 35831
+        }
+      ]
+    },
+    {
+      "id": "happy-path",
+      "title": "Happy path, 100 sensor logs",
+      "sensorLogs": 100,
+      "transactions": 107,
+      "gas": 6214503,
+      "gasByRole": {
+        "Manufacturer": 299678,
+        "Regulator": 123064,
+        "Distributor": 104692,
+        "Pharmacy": 76800,
+        "Oracle": 5610269
+      },
+      "steps": [
+        {
+          "function": "registerBatch",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 258583
+        },
+        {
+          "function": "issueCertificate",
+          "role": "Regulator",
+          "calls": 1,
+          "gas": 123064
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 41095
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 38665
+        },
+        {
+          "function": "anchorSensorLog",
+          "role": "Oracle",
+          "calls": 100,
+          "gas": 5610269
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 66027
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 40969
+        },
+        {
+          "function": "markDelivered",
+          "role": "Pharmacy",
+          "calls": 1,
+          "gas": 35831
+        }
+      ]
+    },
+    {
+      "id": "excursion-recall",
+      "title": "Excursion and recall, 2 sensor logs",
+      "sensorLogs": 2,
+      "transactions": 7,
+      "gas": 624123,
+      "gasByRole": {
+        "Manufacturer": 299666,
+        "Regulator": 35936,
+        "Distributor": 104692,
+        "Pharmacy": 0,
+        "Oracle": 183829
+      },
+      "steps": [
+        {
+          "function": "registerBatch",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 258571
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Manufacturer",
+          "calls": 1,
+          "gas": 41095
+        },
+        {
+          "function": "acceptTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 38665
+        },
+        {
+          "function": "anchorSensorLog",
+          "role": "Oracle",
+          "calls": 1,
+          "gas": 126581
+        },
+        {
+          "function": "initiateTransfer",
+          "role": "Distributor",
+          "calls": 1,
+          "gas": 66027
+        },
+        {
+          "function": "reportExcursion",
+          "role": "Oracle",
+          "calls": 1,
+          "gas": 57248
+        },
+        {
+          "function": "recallBatch",
+          "role": "Regulator",
+          "calls": 1,
+          "gas": 35936
+        }
+      ]
+    }
+  ]
+}
