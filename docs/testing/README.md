@@ -55,7 +55,9 @@ The invariants, stated in `contracts/base/RegistryBase.sol`:
 
 ## What is not tested automatically
 
+The items below are checked by hand. [`manual-test-plan.md`](manual-test-plan.md) is the checklist: the web app's walkthrough on the local chain, the terminal demo, and the optional Amoy deployment and demo run.
+
 * **The web app's screens.** There is no browser test suite. `frontend/README.md` records that the pages were checked by hand and with a scripted headless browser against a local chain.
 * **MetaMask.** The dashboard signs with the local node's test accounts by default. The optional MetaMask path has no test.
-* **Polygon Amoy.** No automated test touches Amoy. On 2026-11-26 the deployment and one `npm run demo:amoy` run were done by hand on the real network, and the verify page was opened against it once (see the root README). The oracle signing with a private key and the dashboards on Amoy are not covered.
+* **Polygon Amoy.** No automated test touches Amoy. On 2026-11-26 the deployment and one `npm run demo:amoy` run were done by hand on the real network, and the verify page was opened against it once (see [`../amoy-deployment.md`](../amoy-deployment.md#what-was-run)). The oracle signing with a private key and the dashboards on Amoy are not covered.
 * **The Pinata and Kubo storage options.** Their tests talk to local mock servers. No test contacts Pinata or a real IPFS node; the default is the local store, which needs neither.

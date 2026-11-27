@@ -14,7 +14,7 @@ The app has no backend of its own. It reads the registry over JSON-RPC, sends tr
 
 Needs Node.js 22.13 or newer. No wallet extension, account, API key, internet connection or `.env` file is needed.
 
-The shortest way is in the repository root: `npm run setup` once, then `npm start -- --seed`, which starts the chain, the file service and this app together and creates five demo lots (see the [root README](../README.md#quick-start)). The steps below start the same parts by hand, one terminal each:
+The shortest way is in the repository root: `npm run setup` once, then `npm start -- --seed`, which starts the chain, the file service and this app together and creates five demo lots (see [Setup](../README.md#setup) and [Start the system](../README.md#start-the-system) in the root README). The steps below start the same parts by hand, one terminal each:
 
 ```bash
 # terminal 1, repository root: the local chain (port 8545), keep it running
@@ -213,7 +213,7 @@ Use this only on a network you trust: the test accounts and the upload endpoint 
 ## Optional: MetaMask and Polygon Amoy
 
 * **MetaMask on the local chain.** Add the network (RPC URL `http://127.0.0.1:8545`, chain ID `31337`, currency `ETH`) and import test accounts with the private keys that `npm run node` prints when it starts (`npm start` hides them; the accounts are the same). Those keys are public; never use them on a real network or send real funds to them. After restarting the local chain, clear the accounts' activity in MetaMask (*Settings → Advanced → Clear activity tab data*) so the nonces start again. The MetaMask sign-in has not been verified: the button exists, and every check of the app used the local test accounts.
-* **Polygon Amoy.** Once `../deployments/amoy.json` is committed, the app knows the Amoy registry: verify links with `chain=80002` work, and a MetaMask wallet on Amoy can use the dashboard. Reading goes through `VITE_AMOY_RPC_URL`. Files still need a reachable upload service and gateway: set `VITE_UPLOAD_SERVICE_URL` and `VITE_IPFS_GATEWAY_URL`. If the RPC endpoint rejects event queries, lower `LOG_CHUNK_BLOCKS` for Amoy in `src/lib/networks.js`. On 2026-11-26 a verify link with `chain=80002` was opened against the live deployment, and the lot's record and history loaded through the default endpoint. The dashboard with a MetaMask wallet on Amoy has not been tried.
+* **Polygon Amoy.** `../deployments/amoy.json` is committed, so the app knows the Amoy registry: verify links with `chain=80002` work, and a MetaMask wallet on Amoy can use the dashboard. Reading goes through `VITE_AMOY_RPC_URL`. Files still need a reachable upload service and gateway: set `VITE_UPLOAD_SERVICE_URL` and `VITE_IPFS_GATEWAY_URL`. If the RPC endpoint rejects event queries, lower `LOG_CHUNK_BLOCKS` for Amoy in `src/lib/networks.js`. On 2026-11-26 a verify link with `chain=80002` was opened against the live deployment, and the lot's record and history loaded through the default endpoint. The dashboard with a MetaMask wallet on Amoy has not been tried.
 
 ## Limits, on purpose
 

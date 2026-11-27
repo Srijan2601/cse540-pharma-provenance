@@ -2,7 +2,7 @@
   "name": "cse540-pharma-provenance",
   "version": "0.1.0",
   "private": true,
-  "description": "Tamper-evident pharmaceutical cold-chain provenance for Polygon Amoy, demoed on a local Hardhat chain (CSE 540 Project Group 2)",
+  "description": "Tamper-evident pharmaceutical cold-chain provenance: a role-based registry contract deployed on Polygon Amoy, with an IoT oracle, file service and web app (CSE 540 Project Group 2)",
   "type": "module",
   "license": "MIT",
   "engines": {

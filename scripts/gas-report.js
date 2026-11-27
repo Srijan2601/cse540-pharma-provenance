@@ -22,13 +22,13 @@
 // How the numbers are measured. The script deploys a fresh registry on
 // Hardhat's in-process network and sends real transactions, one per block.
 // Every number is `gasUsed` from a transaction receipt, so it includes the
-// 21,000 base cost and the calldata, as on a public chain. Gas is set by the
-// EVM's rules, the contract code and the state a transaction touches, not by
-// the network it runs on, so a transaction of the same shape costs the same
-// gas on Polygon Amoy, give or take a few gas of calldata (addresses and
-// hashes differ) and any difference between the two chains' hard forks. What
-// does differ between networks is the gas PRICE, which is why prices are an
-// input here and not something this script decides.
+// 21,000 base cost and the calldata, as on a public chain. The figures are
+// those of Hardhat's network (its hardfork is in the report header). Polygon
+// Amoy charged more gas for the same calls: in the demo run of 2026-11-26
+// every registry call used 9,240 to 27,720 more gas, 21% more in total
+// (docs/amoy-deployment.md). For costs on Amoy, quote its receipts. The gas
+// PRICE differs between networks as well, which is why prices are an input
+// here and not something this script decides.
 //
 // The scenario is deterministic: fixed accounts, fixed lot numbers, fixed
 // documents and fixed timestamps in the calldata. Two runs on the same code

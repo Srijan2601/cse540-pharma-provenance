@@ -1,7 +1,7 @@
 # Sync YYYY-MM-DD
 
 <!--
-Copy to docs/meetings/YYYY-MM-DD.md after each Sunday sync (7–8 PM AZ).
+Copy to docs/meetings/YYYY-MM-DD.md after each team sync.
 PUBLIC REPO: record decisions and action items only. Attendance, absences,
 missed commitments and conflicts go in the team's PRIVATE log, not here.
 Refer to people by first name or GitHub handle.

@@ -65,7 +65,7 @@ abstract contract RegistryTestBase {
     Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     // Role identifiers, recomputed from their names. setUp() checks them
-    // against the registry's own constants (specification B), so the tests
+    // against the registry's own constants (RegistryBase.sol), so the tests
     // never need a view call to learn a role, which would use up a prank.
     bytes32 internal constant REGULATOR_ROLE = keccak256("REGULATOR_ROLE");
     bytes32 internal constant MANUFACTURER_ROLE = keccak256("MANUFACTURER_ROLE");
@@ -156,7 +156,7 @@ abstract contract RegistryTestBase {
     //                         INVARIANT CHECKS
     // =====================================================================
 
-    /// @dev Delivered, Compromised and Recalled end a lot's custody journey (specification D).
+    /// @dev Delivered, Compromised and Recalled end a lot's custody journey (design decision C2).
     function _isTerminal(IProvenanceRegistry.Status status) internal pure returns (bool) {
         return status == IProvenanceRegistry.Status.Delivered || status == IProvenanceRegistry.Status.Compromised
             || status == IProvenanceRegistry.Status.Recalled;

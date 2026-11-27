@@ -7,8 +7,8 @@ import {RegistryTestBase} from "./RegistryTestBase.sol";
 
 /**
  * @title RoleCheckPropertiesTest
- * @notice Property (specification B): on every write function the role check
- *         runs first. A caller that holds none of the function's roles gets
+ * @notice Property (contracts/README.md, Roles: "the role check always runs
+ *         first"): on every write function the role check runs first. A caller that holds none of the function's roles gets
  *         the role error, whatever lot and argument values it passes, valid
  *         or not. The calldata itself is always well-formed (abi.encodeCall):
  *         calldata the ABI decoder rejects fails before any check runs.

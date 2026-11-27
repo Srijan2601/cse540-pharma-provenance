@@ -18,7 +18,7 @@
 //   npx hardhat run scripts/demo.js                       in-process chain (deploys its own registry)
 //   npx hardhat run scripts/demo.js --network localhost   after `npm run node`, deploy:local, roles:local
 //   npx hardhat run scripts/demo.js --network amoy        Polygon Amoy testnet, after `npm run deploy:amoy`
-// or the shortcuts `npm run demo` and `npm run demo:local`.
+// or the shortcuts `npm run demo`, `npm run demo:local` and `npm run demo:amoy`.
 // Set PAUSE=1 to wait for Enter between steps (useful while recording).
 //
 // On localhost the demo uses the registry from deployments/localhost.json and
@@ -51,18 +51,16 @@
 // spans the whole run, which at Amoy's pace of one block per second is likely
 // to be more than 100 blocks.
 //
-// Cost. Gas does not depend on the network: the deployment is about 2.0
-// million gas, a first demo run about 1.9 million and a later run about 1.6
-// million. What that costs in POL depends on the gas price at the time. On
-// 2026-11-25 Amoy's suggested price was about 41 gwei and, later that day,
-// about 54 gwei, which puts the deployment and two runs at about 0.26 to 0.34
-// POL. The "Polygon Amoy" section of the root README gives the figures at
-// both prices and suggests funding the wallet with 0.5 POL. Step 0 tops each
-// wallet up to what its steps need plus a quarter, so every later run tops up
-// again about what the run before used: at those prices a later run needs
-// about 0.07 to 0.09 POL to start. About 0.03 to 0.04 POL stays in the
-// derived wallets after the last run, and nothing sends it back, so count it
-// as spent.
+// Cost. On Hardhat's network the deployment is about 2.0 million gas, a
+// first demo run about 1.9 million and a later run about 1.6 million. Amoy
+// charges more gas for the same calls: on 2026-11-26 the deployment used
+// 2,011,844 gas (0.112663 POL at 56 gwei) and the first run 2,308,953 gas for
+// its 29 transactions (0.137801 POL at about 59.7 gwei). docs/amoy-deployment.md
+// has the figures per call; the root README's "Polygon Amoy" section says how
+// much POL to fund. Step 0 tops each wallet up to what its steps need plus a
+// quarter, so every later run tops up again about what the run before used.
+// What the derived wallets do not spend stays there, and nothing sends it
+// back, so count it as spent.
 //
 // Output markers: "OK" a transaction that succeeded, "BLOCKED" a call that
 // reverted as intended, "--" nothing to do. A line marked "!!" means the
@@ -497,7 +495,9 @@ if (singleWallet) {
   // was seen on 2026-11-25 to move between 30 and 41.25 gwei from one request
   // to the next.
   // Whatever value is read is one the network accepts, and the cap of twice
-  // the base fee stays above Amoy's base fee, a few wei, for the whole run.
+  // the base fee leaves room for the base fee to rise during the run. Amoy's
+  // base fee varies a lot: 63 wei at block 53780000 (2026-11-25), and 30 gwei
+  // from block 53800000 through the run of 2026-11-26.
   const fees = await currentFees(ethers.provider);
   for (const signer of [regulator, manufacturer, distributor, pharmacy, oracle]) sendWithFees(signer, fees);
   await fundDemoWallets(fees);

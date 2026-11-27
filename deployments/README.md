@@ -10,7 +10,7 @@ The hand-off point between the contract and the code that uses it. `frontend/` a
 
 ## `abi/ProvenanceRegistry.json`: the ABI, before any deployment
 
-The ABI of `ProvenanceRegistry` as a plain JSON array: every function, event and custom error, including the ones inherited from OpenZeppelin `AccessControl` (`grantRole`, `hasRole`, `AccessControlUnauthorizedAccount`, ...). It exists so that the dApp and the oracle can be built and tested on a fresh clone, when no network has a deployment yet. Pair it with an address from `<network>.json`, or from your own configuration:
+The ABI of `ProvenanceRegistry` as a plain JSON array: every function, event and custom error, including the ones inherited from OpenZeppelin `AccessControl` (`grantRole`, `hasRole`, `AccessControlUnauthorizedAccount`, ...). It exists so that the dApp and the oracle can be built and tested on a fresh clone without any deployment record. Pair it with an address from `<network>.json`, or from your own configuration:
 
 ```js
 import abi from "../deployments/abi/ProvenanceRegistry.json" with { type: "json" };
@@ -44,7 +44,7 @@ Written by [`scripts/deploy.js`](../scripts/deploy.js), one file per network. Fo
 
 `abi` describes the same interface as `abi/ProvenanceRegistry.json`, as it was when that deployment was made. If the contract changed afterwards, the two differ until the contract is redeployed; for a deployed registry, the ABI in its own `<network>.json` is the one that matches the code on-chain.
 
-After each Amoy deployment, commit the new `amoy.json` and update the **Deployments** table in the root README in the same PR.
+The committed `amoy.json` records the deployment of 2026-11-26 at `0x603E9669D24BFf7c073ECcea36d203A453d49664`. A new Amoy deployment overwrites the file in your working copy. Commit it only if the project moves to the new registry, and then, in the same PR, update every document that names the old address: the badge, the **Deployments** table and the verify links of the root README, [`../docs/amoy-deployment.md`](../docs/amoy-deployment.md), [`../contracts/README.md`](../contracts/README.md), [`../docs/testing/manual-test-plan.md`](../docs/testing/manual-test-plan.md) and this file. A search for the old address finds them all.
 
 ## Verifying the source on the Amoy explorer
 
