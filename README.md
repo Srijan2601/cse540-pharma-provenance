@@ -6,11 +6,11 @@ A shared, tamper-evident record of a prescription drug lot's **custody, temperat
 
 **CSE 540: Engineering Blockchain Applications · Project Group 2 · Fall 2026**
 
-Solidity 0.8 · Hardhat 3 · OpenZeppelin AccessControl · React + ethers.js · IPFS content addressing · Polygon Amoy (optional)
+Solidity 0.8 · Hardhat 3 · OpenZeppelin AccessControl · React + ethers.js · IPFS content addressing · Polygon Amoy testnet
 
-> **Status: final submission.** The whole system (contract, IoT oracle, file service, web app) runs on one laptop against a local Hardhat chain, with no account, private key or wallet extension. Polygon Amoy is an optional extra: its scripts are in the repository, but nothing is deployed there yet ([details](#polygon-amoy-optional)).
+> **Status: final submission. Deployed on the Polygon Amoy testnet** at [`0x603E9669D24BFf7c073ECcea36d203A453d49664`](https://amoy.polygonscan.com/address/0x603E9669D24BFf7c073ECcea36d203A453d49664), where the full terminal demo has run ([details](#polygon-amoy)). The whole system (contract, IoT oracle, file service, web app) can also run on one laptop against a local Hardhat chain, with no account, private key or wallet extension: that is the quickest way to try it, and the backup if the testnet is unavailable.
 
-**Contents:** [Quick start](#quick-start) · [Where to look when grading](#where-to-look-when-grading) · [Demo walkthrough](#demo-walkthrough) · [The problem](#the-problem) · [How it works](#how-it-works) · [Where each promised feature lives](#where-each-promised-feature-lives) · [Repository layout](#repository-layout) · [Commands](#commands) · [Testing](#testing) · [Polygon Amoy](#polygon-amoy-optional) · [Configuration](#configuration) · [Design decisions](#design-decisions-and-trust-assumptions) · [Contributing](#contributing) · [Team](#team) · [References](#references-and-license)
+**Contents:** [Quick start](#quick-start) · [Where to look when grading](#where-to-look-when-grading) · [Demo walkthrough](#demo-walkthrough) · [The problem](#the-problem) · [How it works](#how-it-works) · [Where each promised feature lives](#where-each-promised-feature-lives) · [Repository layout](#repository-layout) · [Commands](#commands) · [Testing](#testing) · [Polygon Amoy](#polygon-amoy) · [Configuration](#configuration) · [Design decisions](#design-decisions-and-trust-assumptions) · [Contributing](#contributing) · [Team](#team) · [References](#references-and-license)
 
 ## Quick start
 
@@ -52,7 +52,7 @@ Three things to try next:
 
 * Ctrl+C stops the chain, the file service and the web app and checks that ports 8545, 8787 and 5173 are free. The chain lives in memory, so every start is a new chain with new lots.
 * `npm run setup` prints two `npm warn deprecated` lines (`inflight`, `glob`). They come from a development-only dependency of the Hardhat toolbox and affect nothing. Do not run `npm audit fix --force`.
-* All of this was checked on macOS with Node.js 22.18. It was not tried on Windows or Linux.
+* All of this was checked on macOS with Node.js 22.18, and on 2026-11-25 again on Fedora Linux with Node.js 22.23.1. It was not tried on Windows.
 
 ## Where to look when grading
 
@@ -124,7 +124,7 @@ flowchart LR
         SVC["Upload + gateway file service<br/>POST /upload · GET /ipfs/CID"]
         STORE[("Content-addressed store<br/>local folder, IPFS CIDs<br/>(Kubo or Pinata optional)")]
     end
-    subgraph ON["On-chain · local Hardhat chain (Polygon Amoy optional)"]
+    subgraph ON["On-chain · local Hardhat chain or Polygon Amoy testnet"]
         REG["ProvenanceRegistry.sol<br/>AccessControl roles · one record per lot<br/>one event per write · status state machine"]
     end
     ORG --> DAPP
@@ -208,7 +208,7 @@ The full transition table, the 17 custom errors and the invariants I1 to I5 are 
 
 **Not in this repository, or not done:**
 
-* **No Polygon Amoy deployment yet.** The Amoy scripts were run only against a local stand-in for Amoy, never on the real network (see [Polygon Amoy](#polygon-amoy-optional)). The web app, the oracle program and file storage were not run against Amoy at all.
+* **Polygon Amoy is deployed but only partly exercised.** The registry is deployed and `npm run demo:amoy` ran once on the real network (see [Polygon Amoy](#polygon-amoy)). The verify page was opened against it once and loaded a lot's record and history; its files were not available, because the terminal demo does not upload them. The dashboards, the oracle program and file storage were not run against Amoy, and the source is not verified on PolygonScan (`npm run verify:amoy` was not run).
 * **Not verified:** signing in with MetaMask (the button exists; every check used the local test accounts), and the verify page on a real phone.
 * **No public hosting** of the verify page, and no public IPFS pinning: the Pinata back end has never been run against the live service, and Kubo is optional.
 * **No browser test suite.** The screens were checked by hand and with a scripted headless browser; the logic behind them has unit tests.
@@ -274,7 +274,7 @@ All of these run in the repository root.
 | `npm run compile` | Compiles the contracts and exports the ABI to `deployments/abi/` (`npm run abi:export` does the export alone). |
 | `npm run clean` | Deletes Hardhat's build output (`artifacts/`, `types/`, the compile cache in `cache/`) and `coverage/`; `deployments/` and the oracle's file store are kept. `npm run compile` rebuilds the build output. |
 | `npm run node`, `npm run deploy:local`, `npm run roles:local` | The first three steps of `npm start`, by hand: a local chain, a deployment written to `deployments/localhost.json`, and the roles for accounts #1 to #4. `npm run node` prints the private keys of the test accounts. They are publicly known: never use them on a real network. |
-| `npm run deploy:amoy`, `demo:amoy`, `roles:amoy`, `verify:amoy` | Polygon Amoy only; see [below](#polygon-amoy-optional). |
+| `npm run deploy:amoy`, `demo:amoy`, `roles:amoy`, `verify:amoy` | Polygon Amoy only; see [below](#polygon-amoy). |
 
 The two sub-packages have their own commands: [`oracle/README.md`](oracle/README.md) (file service, storage and document tools, simulator, oracle options) and [`frontend/README.md`](frontend/README.md) (development server, build, settings).
 
@@ -292,13 +292,13 @@ Counts from runs on 2026-11-25. Every test passed.
 
 The contract tests check every function's success path with its event and every revert with its custom error, a role × function matrix, a status × function matrix, the invariants I1 to I5 after every call of a seeded 500-call random walk (Mocha) and after every step of 64 random walks of 150 steps (Solidity), and whole journeys across roles. The oracle and web-app tests cover their logic without a chain or a browser; the screens themselves have no automated test. The plan, layer by layer, is in [`docs/testing/README.md`](docs/testing/README.md).
 
-## Polygon Amoy (optional)
+## Polygon Amoy
 
-The demo above needs none of this. This section is for showing the same contract on a public testnet from **one** free testnet wallet.
+The project's target network is the public Polygon Amoy testnet. The local chain above is the backup: it needs no network, wallet or test POL. This section deploys the same contract to Amoy and runs the terminal demo there, all from **one** free testnet wallet.
 
-**What was and was not run.** On 2026-11-25, steps 2 to 4 below and `npm run roles:amoy` were run against a local Hardhat node that was given Amoy's chain id (80002) and one-second blocks, with a throwaway key in a separate keystore. They have **never been run on the real network**: no wallet has been funded yet. `npm run verify:amoy` was not run at all.
+**What was run.** On 2026-11-26 (Arizona time), steps 1 to 5 below were run on the real network from Fedora Linux, with a new wallet funded with 1 POL from the faucet. The deployment and one run of `npm run demo:amoy` succeeded: 29 transactions sent and 26 refused calls simulated, the same steps as the local demo. Before that, on 2026-11-25, the same steps and `npm run roles:amoy` had been run against a local stand-in (a Hardhat node given Amoy's chain id, 80002). `npm run roles:amoy` and `npm run verify:amoy` have not been run on the real network.
 
-1. Create a new wallet used for nothing else and get test POL for it from an Amoy faucet. Test POL is free. Faucets that ask for a balance on a real network can be skipped; no faucet has been used for this project yet, so none is recommended here.
+1. Create a new wallet used for nothing else and get test POL for it from an Amoy faucet. Test POL is free. <https://faucet.polygon.technology> worked on 2026-11-26: it asks you to sign in with GitHub or X, and the POL arrived within a few minutes. Faucets that ask for a balance on a real network can be skipped.
 2. Store the endpoint and the key in Hardhat's encrypted keystore, a password-protected file in your user profile, outside the repository. The first command asks you to choose a password; every later Amoy command asks for it.
    ```bash
    npx hardhat keystore set AMOY_RPC_URL           # paste https://polygon-amoy-bor-rpc.publicnode.com
@@ -308,7 +308,7 @@ The demo above needs none of this. This section is for showing the same contract
 4. `npm run demo:amoy` runs the walkthrough of `npm run demo` in single-wallet mode. Your wallet is the regulator; the other actors are throwaway wallets derived from it, topped up automatically. Refused calls are simulated and cost nothing. Every transaction prints its `amoy.polygonscan.com` link. Step 0 prints the cost and stops, before anything is sent, if the balance is too low.
 5. Commit `deployments/amoy.json` and fill in the table below.
 
-**Cost.** Gas does not depend on the network: the deployment is 1,991,684 gas, and on the stand-in a first demo run used 1,920,885 gas in 29 transactions and a second run 1,625,365 gas in 23. The price does. At 54 gwei per gas, which the endpoint suggested between 10:31 and 10:45 UTC on 2026-11-25, the deployment costs about 0.11 POL, and the first run will not start with less than about 0.15 POL in the wallet (it spends about 0.10). That is about 0.25 POL for the deployment and one run, and about 0.34 POL for the deployment and two runs. Earlier the same day the suggested price was 41 gwei, which gives 0.08, 0.11, 0.19 and 0.26 POL. With 0.5 POL in the wallet there is room for either.
+**Cost.** Measured on the real network on 2026-11-26: the deployment was sent at a gas price of 56 gwei and cost about 0.11 POL. The demo run that followed reported 2,308,953 gas and 0.137801 POL in fees for its 29 transactions, at a base fee of 30 gwei plus a priority fee of about 29.7 gwei. Step 0 also moves some POL to the derived wallets; what they do not spend stays there for the next run. On the local stand-in the same run had reported 1,920,885 gas, so for the analysis use the receipts on PolygonScan rather than the stand-in's figures. The first run will not start with less than about 0.25 POL in the wallet, so plan on at least 0.4 POL for the deployment and one run; 0.5 POL or more leaves room for a second run.
 
 **Endpoint.** Use `https://polygon-amoy-bor-rpc.publicnode.com` (no key needed). In a test on 2026-11-25 it answered 40 of 40 requests and accepted event queries of up to 10,000 blocks. `polygon-amoy.drpc.org` answered 31 of 40 and refused every event query over 100 blocks, and the scripts do not retry a failed request. `rpc-amoy.polygon.technology`, which the midterm README named, has been shut down: on 2026-11-25 its name no longer resolved.
 
@@ -316,9 +316,11 @@ The demo above needs none of this. This section is for showing the same contract
 
 | Network | Address | Deploy block | Date |
 |---|---|---|---|
-| Polygon Amoy (80002) | *not deployed yet* | – | – |
+| Polygon Amoy (80002) | [`0x603E9669D24BFf7c073ECcea36d203A453d49664`](https://amoy.polygonscan.com/address/0x603E9669D24BFf7c073ECcea36d203A453d49664) | [53923451](https://amoy.polygonscan.com/block/53923451) | 2026-11-26 |
 
-Once deployed, the address goes in this table and in `deployments/amoy.json`, which the web app and the oracle read (see [`deployments/README.md`](deployments/README.md), which also explains source verification with `npm run verify:amoy` and a free Etherscan API key).
+The address is also in `deployments/amoy.json`, which the web app and the oracle read (see [`deployments/README.md`](deployments/README.md), which also explains source verification with `npm run verify:amoy` and a free Etherscan API key).
+
+To show the deployment in the web app, run `npm start` and open <http://localhost:5173/#/verify?lot=1&chain=80002&registry=0x603E9669D24BFf7c073ECcea36d203A453d49664>. The lot's record and history load from Amoy. Its files show as not fetched, because the terminal demo keeps them in memory and never uploads them.
 
 The older multi-wallet path still exists: `npm run deploy:amoy`, then `npm run roles:amoy` with the organizations' own wallet addresses in `MANUFACTURER_ADDRESS`, `DISTRIBUTOR_ADDRESS`, `RETAILER_ADDRESS` and `ORACLE_ADDRESS`.
 

@@ -5,7 +5,7 @@ The hand-off point between the contract and the code that uses it. `frontend/` a
 | File | Committed? | Created by | Contains |
 |---|---|---|---|
 | `abi/ProvenanceRegistry.json` | **yes** | `npm run compile` (or `npm run abi:export`) | the ABI only |
-| `amoy.json` (none yet: nothing is deployed on Amoy) | **yes**, so everyone uses the same Polygon Amoy deployment | `npm run deploy:amoy` | address, deploy block, ABI |
+| `amoy.json` | **yes**, so everyone uses the same Polygon Amoy deployment | `npm run deploy:amoy` | address, deploy block, ABI |
 | `localhost.json` | no (gitignored; the local chain resets on every restart) | `npm run deploy:local` | address, deploy block, ABI |
 
 ## `abi/ProvenanceRegistry.json`: the ABI, before any deployment

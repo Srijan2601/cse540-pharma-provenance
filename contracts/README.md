@@ -1,6 +1,6 @@
 # Smart contracts
 
-The on-chain half of the system: one `ProvenanceRegistry` contract that keeps a single, tamper-evident record per drug lot. Supply-chain organizations write to it, each limited to its own functions. Anyone can read it, so a patient needs no wallet to verify a lot. The demo runs it on a local Hardhat chain; Polygon Amoy is the target testnet and has no deployment yet (see the [root README](../README.md#polygon-amoy-optional)).
+The on-chain half of the system: one `ProvenanceRegistry` contract that keeps a single, tamper-evident record per drug lot. Supply-chain organizations write to it, each limited to its own functions. Anyone can read it, so a patient needs no wallet to verify a lot. The demo runs it on a local Hardhat chain, and it is deployed on the Polygon Amoy testnet at `0x603E9669D24BFf7c073ECcea36d203A453d49664` (see the [root README](../README.md#polygon-amoy)).
 
 Solidity 0.8.x, OpenZeppelin `AccessControl` (v5), Hardhat 3. IDs like **C3** or **O1** below name the design decisions recorded in [`../docs/design-decisions.md`](../docs/design-decisions.md).
 
