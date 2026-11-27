@@ -27,11 +27,34 @@ Open <http://localhost:5173> and click **Lot 1** for the patient's view. [Setup]
 
 ## Table of contents
 
-**About the system:** [Overview](#overview) · [Features](#features) · [Architecture](#architecture) · [Stakeholders and transaction flows](#stakeholders-and-transaction-flows) · [Smart contract design](#smart-contract-design)
-
-**Running it:** [Quick start](#quick-start) · [Tech stack and dependencies](#tech-stack-and-dependencies) · [Setup](#setup) · [Usage](#usage) ([start the system](#start-the-system), [demo walkthrough](#demo-walkthrough), [IoT oracle](#iot-oracle), [terminal demo](#terminal-demo)) · [Deployment](#deployment) ([local Hardhat chain](#local-hardhat-chain), [Polygon Amoy](#polygon-amoy)) · [Testing](#testing)
-
-**Reference:** [Project structure](#project-structure) · [Command reference](#command-reference) · [Configuration](#configuration) · [Documentation and code comments](#documentation-and-code-comments) · [Proposal features and where they live](#proposal-features-and-where-they-live) · [Limitations and future work](#limitations-and-future-work) · [Evaluation guide](#evaluation-guide) · [Team](#team) · [Contributing](#contributing) · [License](#license) · [References](#references)
+- [Quick start](#quick-start)
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Stakeholders and transaction flows](#stakeholders-and-transaction-flows)
+- [Smart contract design](#smart-contract-design)
+- [Tech stack and dependencies](#tech-stack-and-dependencies)
+- [Setup](#setup)
+- [Usage](#usage)
+  - [Start the system](#start-the-system)
+  - [Demo walkthrough](#demo-walkthrough)
+  - [IoT oracle](#iot-oracle)
+  - [Terminal demo](#terminal-demo)
+- [Deployment](#deployment)
+  - [Local Hardhat chain](#local-hardhat-chain)
+  - [Polygon Amoy](#polygon-amoy)
+- [Testing](#testing)
+- [Project structure](#project-structure)
+- [Command reference](#command-reference)
+- [Configuration](#configuration)
+- [Documentation and code comments](#documentation-and-code-comments)
+- [Proposal features and where they live](#proposal-features-and-where-they-live)
+- [Limitations and future work](#limitations-and-future-work)
+- [Evaluation guide](#evaluation-guide)
+- [Team](#team)
+- [Contributing](#contributing)
+- [License](#license)
+- [References](#references)
 
 ## Overview
 
@@ -416,6 +439,18 @@ The record is committed as [`deployments/amoy.json`](deployments/amoy.json) (add
 
 After the deployment, the terminal demo ran on the network once, start to finish (`npm run demo:amoy`). It sent 29 transactions: the 25 registry calls of the local demo, plus 4 transfers that fund the demo's organization wallets. The 26 refused calls were simulated and cost nothing. The registry therefore holds two lots: lot 1 is Delivered and certified, and lot 2 is Recalled after a reported excursion. The costs, the gas of every call, and the faucet and endpoint notes are in [`docs/amoy-deployment.md`](docs/amoy-deployment.md). What has not been run on Amoy, source verification included, is listed under [Limitations](#limitations-and-future-work).
 
+#### On PolygonScan
+
+The registry's page after the demo run: 25 transactions, sent by the regulator and by the organizations' wallets. PolygonScan names the functions it recognizes and shows the others by their selector.
+
+![The registry's transactions on PolygonScan](docs/images/amoy-registry-transactions.png)
+
+The event of one of them: the regulator recalls lot 2, and `BatchRecalled` carries the lot, the regulator and the reason ([transaction `0xcb35…6a77`](https://amoy.polygonscan.com/tx/0xcb3594203d8af5af8a2a3dbcc8ed1edf6adf2d1f1d913f6b76ced172fc2b6a77#eventlog)).
+
+![The BatchRecalled event of the recall on PolygonScan](docs/images/amoy-batch-recalled-event.png)
+
+More screenshots are in [`docs/amoy-deployment.md`](docs/amoy-deployment.md#on-polygonscan).
+
 #### Reproduce the deployment
 
 Everything runs from one free testnet wallet.
@@ -522,6 +557,7 @@ docs/
   amoy-deployment.md                   the Amoy deployment: what was run, costs, gas per call, faucet and endpoint notes
   schemas/                             JSON Schemas and synthetic examples of the three off-chain documents
   testing/                             README.md (the test plan) and manual-test-plan.md (the checklist by hand)
+  images/                              screenshots of the Amoy deployment on PolygonScan
   meetings/                            notes of the weekly team syncs and the project's milestones
   analysis/data/                       gas-report.json and gas-report.md, generated
 .github/                               CI workflow (contracts, oracle, frontend) and the pull-request template

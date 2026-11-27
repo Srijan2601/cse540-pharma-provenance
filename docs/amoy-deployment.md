@@ -32,6 +32,26 @@ Before the real run, on 2026-11-25, the same steps and `npm run roles:amoy` were
 
 Not run on the real network: `npm run roles:amoy`, `npm run verify:amoy`, the dashboards, the oracle program and the file service. The local system itself was checked on macOS with Node.js 22.18 and, on 2026-11-25, on Fedora Linux with Node.js 22.23.1.
 
+## On PolygonScan
+
+Screenshots taken on 2026-11-26, shortly after the demo run. Every page is public and can be opened from the links.
+
+**The registry.** [Its page](https://amoy.polygonscan.com/address/0x603E9669D24BFf7c073ECcea36d203A453d49664) lists the 25 registry calls of the demo run, sent by the regulator and by the organizations' wallets. PolygonScan names the functions it recognizes and shows the others by their selector.
+
+![The registry's transactions on PolygonScan](images/amoy-registry-transactions.png)
+
+**The regulator's wallet.** [Its page](https://amoy.polygonscan.com/address/0xc9B224DFbE539BA65b92d0f7A1cAb102AE42FB90) shows, from the bottom up: the deployment, the four transfers that fund the organizations' wallets, five role grants, the certificate (selector `0x337f4fc1`) and the recall.
+
+![The regulator wallet's transactions on PolygonScan](images/amoy-regulator-transactions.png)
+
+**One transaction.** The regulator recalls lot 2 in [`0xcb35…6a77`](https://amoy.polygonscan.com/tx/0xcb3594203d8af5af8a2a3dbcc8ed1edf6adf2d1f1d913f6b76ced172fc2b6a77): block 53927826, 2026-11-27 03:36:02 UTC, 45,176 gas.
+
+![The recall transaction on PolygonScan](images/amoy-recall-transaction.png)
+
+**Its event.** The transaction's log holds `BatchRecalled` with the lot, the regulator and the reason, which is how the verify page learns of a recall.
+
+![The BatchRecalled event of the recall on PolygonScan](images/amoy-batch-recalled-event.png)
+
 ## Cost
 
 All figures are from the receipts of the run of 2026-11-26.

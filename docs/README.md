@@ -8,6 +8,7 @@ Design record, document formats, test plan and analysis data. **This repo is pub
 |---|---|
 | [`design-decisions.md`](design-decisions.md) | The design gaps the proposal left open (C1–C7, O1–O6, D1–D6), the draft's answer to each, and what the code does |
 | [`amoy-deployment.md`](amoy-deployment.md) | The Polygon Amoy deployment of 2026-11-26: address and transaction, what was run there, measured cost, gas per call compared with Hardhat's network, faucet and RPC endpoint notes (**O4**, **D5**) |
+| [`images/`](images/) | Screenshots of the Amoy deployment on PolygonScan, used by the root README and `amoy-deployment.md` |
 | [`schemas/`](schemas/) | JSON Schemas and **synthetic** examples for the IPFS documents: lot metadata, regulator certificate, sensor log (**O2**) |
 | [`testing/`](testing/README.md) | The test plan as implemented: the test layers, the command for each, the counts, and what is not tested automatically (**D4**) |
 | [`testing/manual-test-plan.md`](testing/manual-test-plan.md) | The checklist for running everything by hand on a fresh machine: the suites, the web app, the terminal demo and, optionally, Polygon Amoy (**D4**) |
