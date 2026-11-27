@@ -1,4 +1,4 @@
-# Keeps `main` green (Team Contract: "the main branch always passes tests").
+# Keeps `main` green: the main branch always passes its tests.
 # Runs on every push to main and on every pull request, as three independent jobs:
 #   contracts  compiles the contracts and runs `hardhat test`: the Mocha and
 #              Solidity tests in test/, including the two checks that the

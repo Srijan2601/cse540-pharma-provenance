@@ -4,7 +4,7 @@
  *
  * A deployment is known in one of two ways:
  *   - a record file deployments/<network>.json written by scripts/deploy.js
- *     (localhost.json after `npm run deploy:local`, amoy.json when committed);
+ *     (localhost.json after `npm run deploy:local`; amoy.json, which is committed);
  *   - for the local chain only, the VITE_LOCAL_* settings, which override the
  *     record file.
  *

@@ -8,7 +8,8 @@ import {RegistryTestBase, Vm} from "./RegistryTestBase.sol";
 /**
  * @title RandomWalkInvariantTest
  * @notice Stateful property: whatever sequence of calls the stakeholders
- *         make, invariants I1-I5 of the specification hold after every call.
+ *         make, invariants I1-I5 (stated in contracts/base/RegistryBase.sol)
+ *         hold after every call.
  *
  * @dev One fuzz run is one walk of STEPS steps over up to MAX_LOTS lots,
  *      fully determined by the fuzzed `seed`. Each step picks one action,
@@ -39,8 +40,8 @@ import {RegistryTestBase, Vm} from "./RegistryTestBase.sol";
  *        I4  a non-zero custodian and manufacturer
  *        I5  Recalled never changes; Delivered and Compromised change only
  *            to Recalled
- *      plus properties that follow from the specification and design
- *      decisions C3/C4, observed from one step to the next:
+ *      plus properties that follow from the API in IProvenanceRegistry.sol
+ *      and design decisions C3/C4, observed from one step to the next:
  *        - every status change is an edge of the state machine documented
  *          on IProvenanceRegistry.Status;
  *        - a hand-off only opens along an allowed route (to a

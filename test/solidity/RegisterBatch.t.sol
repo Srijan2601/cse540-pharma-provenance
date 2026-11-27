@@ -9,10 +9,10 @@ import {RegistryTestBase} from "./RegistryTestBase.sol";
  * @notice Property: registerBatch succeeds exactly when its inputs are valid,
  *         and a successful call stores exactly the inputs it was given.
  *
- * @dev Valid means (specification E): a non-zero product hash that is not
- *      registered yet, 0 < manufactureDate <= block.timestamp,
- *      minTempTenthsC < maxTempTenthsC, and metadata with a non-empty CID and
- *      a non-zero content hash.
+ * @dev Valid means (the reverts of registerBatch in IProvenanceRegistry.sol):
+ *      a non-zero product hash that is not registered yet,
+ *      0 < manufactureDate <= block.timestamp, minTempTenthsC < maxTempTenthsC,
+ *      and metadata with a non-empty CID and a non-zero content hash.
  *
  *      Uniform random inputs would almost never be valid (a random uint64
  *      date lies in the future), so each run first shapes the raw fuzz
@@ -25,9 +25,10 @@ import {RegistryTestBase} from "./RegistryTestBase.sol";
  *      shaping can only change how often each case occurs, not what the test
  *      asserts.
  *
- *      The specification leaves the order of registerBatch's checks open. When
- *      a run breaks several rules, the revert must name one of them, and the
- *      test does not care which.
+ *      The API leaves the order of registerBatch's checks open (the function
+ *      table in contracts/README.md lists them without an order). When a run
+ *      breaks several rules, the revert must name one of them, and the test
+ *      does not care which.
  *
  *      Runs: 512 (set inline below; the project default is 256).
  */

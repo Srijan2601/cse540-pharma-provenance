@@ -4,9 +4,10 @@
 //
 // Why the scripts do not leave the fees to the libraries: Polygon, Amoy
 // included, only takes a transaction that pays at least the network's minimum
-// price, about 25 gwei per gas, while Amoy's base fee is a few wei. Nearly all
-// of the price is therefore the priority fee, and the libraries' defaults for
-// it do not fit:
+// price, about 25 gwei per gas. Amoy's base fee varies a lot: it was 63 wei at
+// block 53780000 (2026-11-25) and 30 gwei from block 53800000 through the run
+// of 2026-11-26 (docs/amoy-deployment.md). A large part of the price is
+// therefore the priority fee, and the libraries' defaults for it do not fit:
 //   * ethers falls back to a priority fee of 1 gwei when it cannot ask the
 //     node, far below the minimum;
 //   * Hardhat copies the median priority fee paid in the latest block, which on

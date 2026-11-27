@@ -583,7 +583,7 @@ Exit status: `0` done; `1` configuration or pre-flight error; `2` wrong command 
 ### Failures, retries, and never anchoring twice
 
 * **One lot never stops the others.** Each lot is handled inside its own error boundary and the lots are processed one after the other. A failure is printed (`FAILED`) and the next lot is served.
-* **Transient failures are retried, briefly.** An unreachable RPC endpoint or storage service, a timeout or an overload answer is retried up to 4 times with waits of 0.5 s, 1 s and 2 s, then reported. A rejection by the contract is not retried: it would fail the same way.
+* **Transient failures are retried, briefly.** An unreachable RPC endpoint or storage service, a timeout or an overload answer is tried up to 4 times in all (3 retries, after waits of 0.5 s, 1 s and 2 s), then reported. A rejection by the contract is not retried: it would fail the same way.
 * **The contract is not sent what it would reject.** The lot is read first and must be active; the transaction is simulated (`eth_estimateGas`) before it is broadcast. If the contract rejects a call anyway, because the lot changed in between, the custom error is decoded and printed by name, for example `InvalidStatus(batchId=2, current=Recalled)`.
 * **A log is never anchored twice.** The risk is a transaction that is mined while its confirmation is lost, followed by a blind retry. Two safeguards prevent that:
   1. *One document, one nonce.* The account nonce is reserved once per log, and every attempt for that log uses it. A chain mines at most one transaction per account and nonce, so at most one attempt can take effect. A second nonce is never used for the same log.

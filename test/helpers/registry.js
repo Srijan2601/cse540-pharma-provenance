@@ -234,7 +234,8 @@ export async function rejectionOf(registry, send) {
 
 /**
  * Like expectRejected, for a call that breaks two rules whose check order
- * the specification leaves open: the call must revert with one of
+ * the API leaves open (the reverts that contracts/README.md lists without an
+ * order): the call must revert with one of
  * `alternatives` ([errorName, args] pairs) and leave lot `batchId` unchanged.
  */
 export async function expectRejectedWithAnyOf(registry, batchId, send, alternatives) {
