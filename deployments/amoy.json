@@ -1,0 +1,1099 @@
+{
+  "contract": "ProvenanceRegistry",
+  "network": "amoy",
+  "chainId": 80002,
+  "address": "0x603E9669D24BFf7c073ECcea36d203A453d49664",
+  "deployBlock": 53923451,
+  "txHash": "0x6407c412ddbd2143e50160b6ae3f353a6fdf8e5dca209174395e3dc40432ea6b",
+  "deployer": "0xc9B224DFbE539BA65b92d0f7A1cAb102AE42FB90",
+  "regulator": "0xc9B224DFbE539BA65b92d0f7A1cAb102AE42FB90",
+  "deployedAt": "2026-11-27T02:23:08.006Z",
+  "abi": [
+    {
+      "type": "constructor",
+      "stateMutability": "undefined",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "address",
+          "name": "regulator"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "AccessControlBadConfirmation",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "AccessControlUnauthorizedAccount",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "account"
+        },
+        {
+          "type": "bytes32",
+          "name": "neededRole"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "BatchNotFound",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "DuplicateProduct",
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "productHash"
+        },
+        {
+          "type": "uint256",
+          "name": "existingBatchId"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "EmptyDocument",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "EmptyReason",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InvalidRecipient",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "to"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidStatus",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "uint8",
+          "name": "current"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidStatusTransition",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "uint8",
+          "name": "from"
+        },
+        {
+          "type": "uint8",
+          "name": "to"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidTemperatureRange",
+      "inputs": [
+        {
+          "type": "int16",
+          "name": "minTempTenthsC"
+        },
+        {
+          "type": "int16",
+          "name": "maxTempTenthsC"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidTimestamp",
+      "inputs": [
+        {
+          "type": "uint64",
+          "name": "timestamp"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "MissingEitherRole",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "account"
+        },
+        {
+          "type": "bytes32",
+          "name": "roleA"
+        },
+        {
+          "type": "bytes32",
+          "name": "roleB"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NoPendingTransfer",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotCustodian",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "address",
+          "name": "caller"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotPendingCustodian",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "address",
+          "name": "caller"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ReadingWithinRange",
+      "inputs": [
+        {
+          "type": "int16",
+          "name": "readingTenthsC"
+        },
+        {
+          "type": "int16",
+          "name": "minTempTenthsC"
+        },
+        {
+          "type": "int16",
+          "name": "maxTempTenthsC"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TransferAlreadyPending",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "address",
+          "name": "pendingCustodian"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZeroProductHash",
+      "inputs": []
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "BatchRecalled",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "regulator",
+          "indexed": true
+        },
+        {
+          "type": "string",
+          "name": "reason",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "BatchRegistered",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "manufacturer",
+          "indexed": true
+        },
+        {
+          "type": "bytes32",
+          "name": "productHash",
+          "indexed": true
+        },
+        {
+          "type": "string",
+          "name": "metadataCid",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "CertificateIssued",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "regulator",
+          "indexed": true
+        },
+        {
+          "type": "string",
+          "name": "cid",
+          "indexed": false
+        },
+        {
+          "type": "bytes32",
+          "name": "contentHash",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "CustodyTransferred",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "from",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "to",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "ExcursionReported",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "uint32",
+          "name": "logIndex",
+          "indexed": false
+        },
+        {
+          "type": "int16",
+          "name": "readingTenthsC",
+          "indexed": false
+        },
+        {
+          "type": "uint64",
+          "name": "observedAt",
+          "indexed": false
+        },
+        {
+          "type": "string",
+          "name": "logCid",
+          "indexed": false
+        },
+        {
+          "type": "bytes32",
+          "name": "logContentHash",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "RoleAdminChanged",
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role",
+          "indexed": true
+        },
+        {
+          "type": "bytes32",
+          "name": "previousAdminRole",
+          "indexed": true
+        },
+        {
+          "type": "bytes32",
+          "name": "newAdminRole",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "RoleGranted",
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "account",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "sender",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "RoleRevoked",
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "account",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "sender",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "SensorLogAnchored",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "uint32",
+          "name": "logIndex",
+          "indexed": true
+        },
+        {
+          "type": "string",
+          "name": "cid",
+          "indexed": false
+        },
+        {
+          "type": "bytes32",
+          "name": "contentHash",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "StatusUpdated",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "uint8",
+          "name": "previousStatus",
+          "indexed": false
+        },
+        {
+          "type": "uint8",
+          "name": "newStatus",
+          "indexed": false
+        },
+        {
+          "type": "address",
+          "name": "by",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "TransferCancelled",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "from",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "to",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "anonymous": false,
+      "name": "TransferInitiated",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "from",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "to",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "DEFAULT_ADMIN_ROLE",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "DISTRIBUTOR_ROLE",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "MANUFACTURER_ROLE",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "ORACLE_ROLE",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "REGULATOR_ROLE",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "RETAILER_ROLE",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "acceptTransfer",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "anchorSensorLog",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "tuple",
+          "name": "sensorLog",
+          "components": [
+            {
+              "type": "string",
+              "name": "cid"
+            },
+            {
+              "type": "bytes32",
+              "name": "contentHash"
+            }
+          ]
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "batchIdOf",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "productHash"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "cancelTransfer",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "getRoleAdmin",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bytes32",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "grantRole",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role"
+        },
+        {
+          "type": "address",
+          "name": "account"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "hasRole",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role"
+        },
+        {
+          "type": "address",
+          "name": "account"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "initiateTransfer",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "address",
+          "name": "to"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "issueCertificate",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "tuple",
+          "name": "certificate",
+          "components": [
+            {
+              "type": "string",
+              "name": "cid"
+            },
+            {
+              "type": "bytes32",
+              "name": "contentHash"
+            }
+          ]
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "markDelivered",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "recallBatch",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "string",
+          "name": "reason"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "registerBatch",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "productHash"
+        },
+        {
+          "type": "uint64",
+          "name": "manufactureDate"
+        },
+        {
+          "type": "int16",
+          "name": "minTempTenthsC"
+        },
+        {
+          "type": "int16",
+          "name": "maxTempTenthsC"
+        },
+        {
+          "type": "tuple",
+          "name": "metadata",
+          "components": [
+            {
+              "type": "string",
+              "name": "cid"
+            },
+            {
+              "type": "bytes32",
+              "name": "contentHash"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "renounceRole",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role"
+        },
+        {
+          "type": "address",
+          "name": "callerConfirmation"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "reportExcursion",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "int16",
+          "name": "readingTenthsC"
+        },
+        {
+          "type": "uint64",
+          "name": "observedAt"
+        },
+        {
+          "type": "tuple",
+          "name": "sensorLog",
+          "components": [
+            {
+              "type": "string",
+              "name": "cid"
+            },
+            {
+              "type": "bytes32",
+              "name": "contentHash"
+            }
+          ]
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "revokeRole",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes32",
+          "name": "role"
+        },
+        {
+          "type": "address",
+          "name": "account"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "supportsInterface",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "bytes4",
+          "name": "interfaceId"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "totalBatches",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "type": "function",
+      "name": "updateStatus",
+      "constant": false,
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        },
+        {
+          "type": "uint8",
+          "name": "newStatus"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "verifyBatch",
+      "constant": true,
+      "stateMutability": "view",
+      "payable": false,
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "batchId"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "tuple",
+          "name": "",
+          "components": [
+            {
+              "type": "uint256",
+              "name": "id"
+            },
+            {
+              "type": "bytes32",
+              "name": "productHash"
+            },
+            {
+              "type": "address",
+              "name": "manufacturer"
+            },
+            {
+              "type": "uint64",
+              "name": "manufactureDate"
+            },
+            {
+              "type": "uint64",
+              "name": "registeredAt"
+            },
+            {
+              "type": "address",
+              "name": "custodian"
+            },
+            {
+              "type": "address",
+              "name": "pendingCustodian"
+            },
+            {
+              "type": "uint8",
+              "name": "status"
+            },
+            {
+              "type": "int16",
+              "name": "minTempTenthsC"
+            },
+            {
+              "type": "int16",
+              "name": "maxTempTenthsC"
+            },
+            {
+              "type": "uint32",
+              "name": "sensorLogCount"
+            },
+            {
+              "type": "tuple",
+              "name": "metadata",
+              "components": [
+                {
+                  "type": "string",
+                  "name": "cid"
+                },
+                {
+                  "type": "bytes32",
+                  "name": "contentHash"
+                }
+              ]
+            },
+            {
+              "type": "tuple",
+              "name": "certificate",
+              "components": [
+                {
+                  "type": "string",
+                  "name": "cid"
+                },
+                {
+                  "type": "bytes32",
+                  "name": "contentHash"
+                }
+              ]
+            },
+            {
+              "type": "tuple",
+              "name": "latestSensorLog",
+              "components": [
+                {
+                  "type": "string",
+                  "name": "cid"
+                },
+                {
+                  "type": "bytes32",
+                  "name": "contentHash"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
